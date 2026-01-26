@@ -19,7 +19,7 @@
         input { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
         button { width: 100%; padding: 12px; background: #802434; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; }
         button:hover { background: #5e1a28; }
-        .error-message { color: #d32f2f; margin-top: 15px; font-weight: bold; }
+        .error-message { color: #d32f2f; margin-top: 15px; font-weight: bold; word-break: break-word; }
 
         /* App Styles */
         h1 { color: var(--primary); text-align: center; }
@@ -104,8 +104,8 @@
         // =====================================================
         // CONFIGURACIÓN
         // =====================================================
-        // PEGA AQUÍ LA URL DE TU APP DE GOOGLE SCRIPTS (/exec)
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwYb9SOhFXmvm6eCWW9DmmZavN0zM3HgAa1vYyC-s_k52OkmcHIzE_9M-igZG52CvrY/exec";
+        // Verifica que esta sea la URL NUEVA que acabas de crear
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbycxYxKJSs0sS-bLKcjMyqcWxHSWZHtJxuxmTxjUx7RCK-0kdQpELvSPM2TvG9oNItP/exec";
 
         // =====================================================
         // LÓGICA DE LOGIN (SECURO)
@@ -117,11 +117,16 @@
             const errorDiv = document.getElementById('login-error');
 
             btn.innerText = "Verificando...";
+            btn.disabled = true;
             
             try {
-                // Enviamos las credenciales al servidor de Google
+                // CONFIGURACIÓN CORRECTA PARA EXTERNOS (GITHUB)
                 const response = await fetch(SCRIPT_URL, {
                     method: 'POST',
+                    headers: {
+                        'Content-Type': 'text/plain;charset=utf-8', // Importante para CORS
+                    },
+                    redirect: 'follow', // MUY IMPORTANTE: Seguir la redirección de Google
                     body: JSON.stringify({
                         action: 'login',
                         user: user,
@@ -139,22 +144,23 @@
                     document.getElementById('password').value = '';
                 }
             } catch (error) {
-                errorDiv.innerText = "Error de conexión con el servidor";
                 console.error(error);
+                errorDiv.innerText = "Error de conexión. Revisa la consola (F12) o asegúrate de que la URL del Script es la NUEVA versión.";
             } finally {
                 btn.innerText = "Iniciar Sesión";
+                btn.disabled = false;
             }
         }
 
         function showApp() {
-    const loginView = document.getElementById('login-view');
-    const appView = document.getElementById('app-view');
-    
-    console.log("Mostrando App..."); // Mensaje de prueba
-    
-    if(loginView) loginView.style.display = 'none'; // Ocultamos login por fuerza bruta
-    if(appView) appView.style.display = 'block';    // Mostramos app por fuerza bruta
-}
+            const loginView = document.getElementById('login-view');
+            const appView = document.getElementById('app-view');
+            
+            console.log("Mostrando App..."); 
+            
+            if(loginView) loginView.style.display = 'none'; 
+            if(appView) appView.style.display = 'block';    
+        }
 
         window.addEventListener('DOMContentLoaded', () => {
             if (sessionStorage.getItem('isLoggedIn') === 'true') showApp();
@@ -170,30 +176,39 @@
             const query = document.getElementById('searchInput').value.trim();
             if (!query) return alert("Ingrese CCT");
             
-            document.getElementById('resultsList').innerHTML = 'Buscando...';
+            const listDiv = document.getElementById('resultsList');
+            listDiv.innerHTML = '<p style="text-align:center; color:#666;">Buscando en la base de datos...</p>';
             
             try {
-                const response = await fetch(`${SCRIPT_URL}?q=${query}`);
+                // CONFIGURACIÓN CORRECTA PARA GET
+                const response = await fetch(`${SCRIPT_URL}?q=${query}`, {
+                    redirect: 'follow' // También necesario para GET
+                });
+                
+                if (!response.ok) throw new Error("Error en la respuesta del servidor");
+                
                 const data = await response.json();
                 
                 if (data.error) throw new Error(data.error);
                 
-                if (!data.length) {
-                    document.getElementById('resultsList').innerHTML = 'No encontrado';
+                if (!data || data.length === 0) {
+                    listDiv.innerHTML = '<div style="padding:15px; text-align:center;">No se encontraron escuelas con ese CCT.</div>';
                     return;
                 }
 
                 let html = '';
                 data.forEach(row => {
-                    html += `<div class="result-item" onclick='selectSchool(${JSON.stringify(row)})'>
+                    const safeRow = JSON.stringify(row).replace(/"/g, '&quot;');
+                    html += `<div class="result-item" onclick='selectSchool(${safeRow})'>
                         <strong>${row.nombre}</strong> (${row.cct})<br>
                         <small>${row.municipio}</small>
                     </div>`;
                 });
-                document.getElementById('resultsList').innerHTML = html;
+                listDiv.innerHTML = html;
 
             } catch (error) {
-                document.getElementById('resultsList').innerHTML = `<span style="color:red">${error.message}</span>`;
+                console.error(error);
+                listDiv.innerHTML = `<span style="color:red; padding:10px; display:block;">Error: ${error.message}. <br><small>Si dice 'ID incorrecto', verifica el Code.gs.</small></span>`;
             }
         }
 
@@ -241,8 +256,13 @@
             };
 
             try {
+                // CONFIGURACIÓN CORRECTA PARA POST
                 const response = await fetch(SCRIPT_URL, {
                     method: 'POST',
+                    headers: {
+                        'Content-Type': 'text/plain;charset=utf-8',
+                    },
+                    redirect: 'follow',
                     body: JSON.stringify(payload)
                 });
                 
@@ -250,7 +270,6 @@
                 
                 if (data.success) {
                     showToast("Guardado correctamente", "success");
-                    // Refrescamos el estado localmente para simular bloqueo
                     selectSchool({
                         rowIndex: payload.rowIndex,
                         total: payload.total,
@@ -261,6 +280,7 @@
                     showToast("Error: " + (data.error || data.message), "error");
                 }
             } catch (error) {
+                console.error(error);
                 showToast("Error de conexión", "error");
             } finally {
                 btn.innerText = originalText;
@@ -276,9 +296,4 @@
         }
     </script>
 </body>
-
 </html>
-
-
-
-
