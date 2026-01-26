@@ -147,9 +147,14 @@
         }
 
         function showApp() {
-            document.getElementById('login-view').classList.add('hidden');
-            document.getElementById('app-view').classList.remove('hidden');
-        }
+    const loginView = document.getElementById('login-view');
+    const appView = document.getElementById('app-view');
+    
+    console.log("Mostrando App..."); // Mensaje de prueba
+    
+    if(loginView) loginView.style.display = 'none'; // Ocultamos login por fuerza bruta
+    if(appView) appView.style.display = 'block';    // Mostramos app por fuerza bruta
+}
 
         window.addEventListener('DOMContentLoaded', () => {
             if (sessionStorage.getItem('isLoggedIn') === 'true') showApp();
@@ -271,4 +276,5 @@
         }
     </script>
 </body>
+
 </html>
