@@ -110,6 +110,9 @@
         // =====================================================
         // LÓGICA DE LOGIN (SECURO)
         // =====================================================
+                // =====================================================
+        // LÓGICA DE LOGIN (CON DIAGNÓSTICO)
+        // =====================================================
         async function checkLogin() {
             const user = document.getElementById('username').value;
             const pass = document.getElementById('password').value;
@@ -118,24 +121,31 @@
 
             btn.innerText = "Verificando...";
             btn.disabled = true;
+            errorDiv.innerText = ""; // Limpiar
             
             try {
-                // CONFIGURACIÓN CORRECTA PARA EXTERNOS (GITHUB)
                 const response = await fetch(SCRIPT_URL, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'text/plain;charset=utf-8', // Importante para CORS
-                    },
-                    redirect: 'follow', // MUY IMPORTANTE: Seguir la redirección de Google
-                    body: JSON.stringify({
-                        action: 'login',
-                        user: user,
-                        pass: pass
-                    })
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    redirect: 'follow',
+                    body: JSON.stringify({ action: 'login', user: user, pass: pass })
                 });
                 
-                const data = await response.json();
+                // 1. Leemos lo que llegó como TEXTO (crudo) para ver qué es
+                const rawText = await response.text();
+                
+                console.log("Respuesta cruda de Google:", rawText); // También aparece en F12 > Consola
 
+                let data;
+                try {
+                    // Intentamos convertir a JSON
+                    data = JSON.parse(rawText);
+                } catch (e) {
+                    // Si falla, es porque Google devolvió una página de error HTML
+                    throw new Error("Google devolvió un ERROR HTML. Revisa abajo.");
+                }
+
+                // 2. Lógica normal si el JSON es correcto
                 if (data.success) {
                     sessionStorage.setItem('isLoggedIn', 'true');
                     showApp();
@@ -143,9 +153,15 @@
                     errorDiv.innerText = data.message || "Error de acceso";
                     document.getElementById('password').value = '';
                 }
+
             } catch (error) {
                 console.error(error);
-                errorDiv.innerText = "Error de conexión. Revisa la consola (F12) o asegúrate de que la URL del Script es la NUEVA versión.";
+                // 3. Mostramos el mensaje detallado
+                errorDiv.innerHTML = `
+                    <strong>Error detectado:</strong><br>
+                    ${error.message}<br><br>
+                    <small>Abre la consola (F12) para ver qué envió Google exactamente.</small>
+                `;
             } finally {
                 btn.innerText = "Iniciar Sesión";
                 btn.disabled = false;
@@ -297,3 +313,4 @@
     </script>
 </body>
 </html>
+
