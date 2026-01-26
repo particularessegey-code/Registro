@@ -168,14 +168,27 @@
             }
         }
 
-        function showApp() {
+               function showApp() {
             const loginView = document.getElementById('login-view');
             const appView = document.getElementById('app-view');
             
-            console.log("Mostrando App..."); 
+            console.log("Intentando mostrar la app...");
+            console.log("LoginView encontrado:", !!loginView);
+            console.log("AppView encontrado:", !!appView);
             
-            if(loginView) loginView.style.display = 'none'; 
-            if(appView) appView.style.display = 'block';    
+            // 1. Ocultamos el Login por fuerza bruta
+            if (loginView) {
+                loginView.style.display = 'none';
+            }
+
+            // 2. Mostramos la App quitando la clase 'hidden'
+            // Usar classList es mejor que style.display cuando hay !important en el CSS
+            if (appView) {
+                appView.classList.remove('hidden');
+                appView.style.display = 'block'; // Refuerzo por seguridad
+            } else {
+                alert("Error crítico: No se encontró la sección 'app-view' en el HTML. Verifica que no hayas borrado el <div> principal.");
+            }
         }
 
         window.addEventListener('DOMContentLoaded', () => {
@@ -313,4 +326,5 @@
     </script>
 </body>
 </html>
+
 
