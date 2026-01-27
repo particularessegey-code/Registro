@@ -3,46 +3,82 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registro Escolar Seguro</title>
+    <title>Captura de Alumnos - Base de Datos Escolar</title>
     <style>
-        /* --- ESTILOS --- */
-        :root { --primary: #1e40af; --success: #10b981; --bg: #f8fafc; --text: #334155; --border: #cbd5e1; }
+        /* --- ESTILOS ORIGINALES DE TU PROYECTO --- */
+        :root {
+            --primary: #1e40af;
+            --primary-light: #3b82f6;
+            --bg: #f8fafc;
+            --text: #334155;
+            --border: #cbd5e1;
+            --success: #10b981;
+        }
+
         body { font-family: 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--text); padding: 20px; margin: 0; }
-        .hidden { display: none !important; }
         .container { max-width: 1000px; margin: 0 auto; }
+        
         .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); margin-bottom: 20px; border: 1px solid var(--border); }
         
-        /* Login Styles */
-        #login-view { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #f4f7f6; display: flex; justify-content: center; align-items: center; z-index: 5000; }
-        .login-container { background: #fff; padding: 40px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); text-align: center; width: 90%; max-width: 400px; }
-        .login-container h2 { color: #802434; margin: 0 0 20px 0; }
-        input { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
-        button { width: 100%; padding: 12px; background: #802434; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; }
-        button:hover { background: #5e1a28; }
-        .error-message { color: #d32f2f; margin-top: 15px; font-weight: bold; word-break: break-word; }
+        h1 { color: var(--primary); text-align: center; margin-bottom: 5px; }
+        h2 { font-size: 1.2rem; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; margin-bottom: 20px; }
+        
+        /* Search Bar */
+        .search-bar { display: flex; gap: 10px; }
+        .search-bar input { flex: 1; padding: 12px; border: 2px solid var(--border); border-radius: 8px; font-size: 1.1rem; }
+        .search-bar button { padding: 0 25px; font-size: 1rem; background: var(--primary); color: white; border: none; border-radius: 8px; cursor: pointer; }
+        .search-bar button:hover { background: var(--primary-dark); }
 
-        /* App Styles */
-        h1 { color: var(--primary); text-align: center; }
-        .search-bar { display: flex; gap: 10px; margin-bottom: 15px; }
-        .search-bar input { margin-bottom: 0; }
-        .search-bar button { background: var(--primary); width: auto; }
-        .search-bar button:hover { background: #1e3a8a; }
-        
+        /* Results List */
+        #resultsList { margin-top: 15px; }
         .result-item { padding: 15px; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 10px; cursor: pointer; background: #fff; transition: all 0.2s; border-left: 5px solid var(--border); }
-        .result-item:hover { border-left-color: var(--primary); transform: translateX(5px); }
+        .result-item:hover { border-left-color: var(--primary); transform: translateX(5px); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .result-header { display: flex; justify-content: space-between; align-items: center; }
+        .cct-badge { background: #e2e8f0; padding: 4px 8px; border-radius: 4px; font-family: monospace; font-weight: bold; }
+        .turno-badge { background: #fee2e2; color: #991b1b; padding: 4px 8px; border-radius: 4px; font-weight: bold; font-size: 0.9rem; }
         
+        /* Form Grid */
         .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
         .full-width { grid-column: 1 / -1; }
-        label { display: block; font-size: 0.85rem; font-weight: 600; color: #64748b; margin-bottom: 5px; }
-        input[readonly] { background-color: #f1f5f9; color: #94a3b8; border: none; }
-        input.locked-field { background-color: #e2e8f0; cursor: not-allowed; }
         
-        .btn-save { background: var(--success); padding: 12px 30px; border: none; color: white; border-radius: 8px; cursor: pointer; font-size: 1.1rem; width: auto; display: inline-block; }
+        label { display: block; font-size: 0.85rem; font-weight: 600; color: #64748b; margin-bottom: 5px; }
+        
+        input { width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px; font-size: 0.95rem; box-sizing: border-box; }
+        input:focus { outline: 2px solid var(--primary-light); border-color: transparent; }
+        
+        input[readonly] { background-color: #f1f5f9; color: #94a3b8; border: none; font-weight: 500; }
+        
+        /* CAMPOS BLOQUEADOS POR DATO EXISTENTE */
+        input.locked-field {
+            background-color: #e2e8f0;
+            color: #64748b;
+            border: 1px solid #cbd5e1;
+            cursor: not-allowed;
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);
+        }
+        
+        /* Section Styles */
+        .section-title { grid-column: 1/-1; color: var(--primary); font-weight: bold; margin-top: 10px; text-transform: uppercase; letter-spacing: 1px; font-size: 0.8rem; }
+
+        /* Actions */
+        .actions { margin-top: 25px; text-align: right; border-top: 1px solid var(--border); padding-top: 20px; }
+        .btn-save { background: var(--success); padding: 12px 30px; font-size: 1.1rem; border: none; color: white; border-radius: 8px; cursor: pointer; box-shadow: 0 4px 6px rgba(16, 185, 129, 0.2); }
         .btn-save:hover { background: #059669; }
         
-        #toast { position: fixed; bottom: 30px; right: 30px; background: #333; color: white; padding: 15px 25px; border-radius: 8px; opacity: 0; transition: opacity 0.3s; z-index: 2000; }
+        /* Status Overlay for Form */
+        #formSection.disabled { opacity: 0.5; pointer-events: none; filter: blur(1px); }
+
+        /* Toast */
+        #toast { position: fixed; bottom: 30px; right: 30px; background: #333; color: white; padding: 15px 25px; border-radius: 8px; opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 2000; }
         #toast.show { opacity: 1; }
         #toast.success { background: var(--success); }
+        #toast.error { background: #ef4444; }
+
+        /* --- ESTILOS LOGIN --- */
+        #login-view { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #f4f7f6; display: flex; justify-content: center; align-items: center; z-index: 5000; }
+        .login-container { background: #fff; padding: 40px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); text-align: center; width: 90%; max-width: 400px; }
+        .login-container h2 { color: #802434; margin-bottom: 20px; border:none; }
+        .error-message { color: #d32f2f; margin-top: 15px; font-weight: bold; word-break: break-word; }
     </style>
 </head>
 <body>
@@ -58,40 +94,63 @@
       </div>
     </div>
 
-    <!-- ================= VISTA APP ================= -->
+    <!-- ================= VISTA DE LA APLICACIÓN ================= -->
     <div id="app-view" class="hidden">
         <div class="container">
-            <header style="margin-bottom: 20px;">
-                <h1>Registro de Alumnos</h1>
+            <header>
+                <h1>Registro de Alumnos por Escuela</h1>
+                <p style="text-align: center; color: #64748b;">Complete los datos faltantes. Los campos ya capturados se bloquearán.</p>
             </header>
 
+            <!-- BÚSQUEDA -->
             <div class="card">
                 <h2>1. Buscar Escuela</h2>
                 <div class="search-bar">
-                    <input type="text" id="searchInput" placeholder="CCT (ej: 31PPR...)" onkeypress="if(event.key === 'Enter') searchSchool()">
+                    <input type="text" id="searchInput" placeholder="Escriba la Clave CCT (ej: 31PPR...)" onkeypress="if(event.key === 'Enter') searchSchool()">
                     <button onclick="searchSchool()">Buscar</button>
                 </div>
                 <div id="resultsList"></div>
             </div>
 
-            <div class="card hidden" id="formSection">
-                <h2>2. Captura de Datos</h2>
+            <!-- FORMULARIO DE CAPTURA -->
+            <!-- Nota: Inicia con clase 'disabled' para el efecto borroso -->
+            <div class="card disabled" id="formSection">
+                <h2>2. Datos de la Escuela (Referencia)</h2>
                 <form id="captureForm" onsubmit="event.preventDefault(); saveData();">
                     <input type="hidden" id="rowIndex">
+
                     <div class="form-grid">
-                        <!-- READ ONLY -->
+                        <!-- CAMPOS DE SOLO LECTURA (REFERENCIA) -->
+                        <div class="section-title">Información Identificatoria</div>
+                        
+                        <div><label>NUM</label><input type="text" id="disp_num" readonly></div>
+                        <div><label>CLAVE C.C.T.</label><input type="text" id="disp_cct" readonly></div>
                         <div class="full-width"><label>NOMBRE ESCUELA</label><input type="text" id="disp_nombre" readonly></div>
-                        <div><label>CCT</label><input type="text" id="disp_cct" readonly></div>
-                        <div><label>MUNICIPIO</label><input type="text" id="disp_municipio" readonly></div>
-                        <div class="full-width" style="border-top:1px dashed #ccc; margin-top:10px; padding-top:10px;">
-                            <label>DATOS A CAPTURAR</label>
+                        <div><label>NIVEL</label><input type="text" id="disp_nivel" readonly></div>
+                        <div><label>TURNO</label><input type="text" id="disp_turno" readonly style="font-weight: bold; color: #991b1b;"></div>
+                        
+                        <div class="section-title">Ubicación y Contacto</div>
+                        
+                        <div class="full-width"><label>MUNICIPIO</label><input type="text" id="disp_municipio" readonly></div>
+                        <div class="full-width"><label>LOCALIDAD</label><input type="text" id="disp_localidad" readonly></div>
+                        <div class="full-width"><label>DIRECCION</label><input type="text" id="disp_direccion" readonly></div>
+                        <div><label>AREA</label><input type="text" id="disp_area" readonly></div>
+                        <div><label>VISITADOR</label><input type="text" id="disp_visitador" readonly></div>
+
+                        <!-- CAPTURA (DATOS FALTANTES) -->
+                        <div class="section-title" style="margin-top: 20px; border-top: 1px dashed var(--border); padding-top: 15px;">
+                            ⬇ Captura de Datos
                         </div>
-                        <div><label>TOTAL ALUMNOS</label><input type="number" id="field_total" required></div>
-                        <div><label>MUJERES</label><input type="number" id="field_mujeres" required></div>
-                        <div><label>HOMBRES</label><input type="number" id="field_hombres" required></div>
+
+                        <div><label>TOTAL DE ALUMNOS</label><input type="number" id="field_total" required min="0"></div>
+                        <div><label>ALUMNOS MUJER</label><input type="number" id="field_mujeres" required min="0"></div>
+                        <div><label>ALUMNOS HOMBRES</label><input type="number" id="field_hombres" required min="0"></div>
+                        <div><label>TOTAL DISCAPACIDAD</label><input type="number" id="field_discapacidad" required min="0"></div>
+                        <div><label>MAYA HABLANTE</label><input type="number" id="field_maya" required min="0"></div>
                     </div>
-                    <div style="text-align: right; margin-top: 20px;">
-                        <button type="submit" class="btn-save">Guardar Datos</button>
+
+                    <div class="actions">
+                        <button type="submit" class="btn-save">Guardar</button>
                     </div>
                 </form>
             </div>
@@ -104,14 +163,10 @@
         // =====================================================
         // CONFIGURACIÓN
         // =====================================================
-        // Verifica que esta sea la URL NUEVA que acabas de crear
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbycxYxKJSs0sS-bLKcjMyqcWxHSWZHtJxuxmTxjUx7RCK-0kdQpELvSPM2TvG9oNItP/exec";
 
         // =====================================================
-        // LÓGICA DE LOGIN (SECURO)
-        // =====================================================
-                // =====================================================
-        // LÓGICA DE LOGIN (CON DIAGNÓSTICO)
+        // LÓGICA DE LOGIN
         // =====================================================
         async function checkLogin() {
             const user = document.getElementById('username').value;
@@ -121,7 +176,6 @@
 
             btn.innerText = "Verificando...";
             btn.disabled = true;
-            errorDiv.innerText = ""; // Limpiar
             
             try {
                 const response = await fetch(SCRIPT_URL, {
@@ -131,21 +185,11 @@
                     body: JSON.stringify({ action: 'login', user: user, pass: pass })
                 });
                 
-                // 1. Leemos lo que llegó como TEXTO (crudo) para ver qué es
                 const rawText = await response.text();
+                console.log("Respuesta cruda:", rawText); 
                 
-                console.log("Respuesta cruda de Google:", rawText); // También aparece en F12 > Consola
+                const data = JSON.parse(rawText);
 
-                let data;
-                try {
-                    // Intentamos convertir a JSON
-                    data = JSON.parse(rawText);
-                } catch (e) {
-                    // Si falla, es porque Google devolvió una página de error HTML
-                    throw new Error("Google devolvió un ERROR HTML. Revisa abajo.");
-                }
-
-                // 2. Lógica normal si el JSON es correcto
                 if (data.success) {
                     sessionStorage.setItem('isLoggedIn', 'true');
                     showApp();
@@ -153,42 +197,21 @@
                     errorDiv.innerText = data.message || "Error de acceso";
                     document.getElementById('password').value = '';
                 }
-
             } catch (error) {
                 console.error(error);
-                // 3. Mostramos el mensaje detallado
-                errorDiv.innerHTML = `
-                    <strong>Error detectado:</strong><br>
-                    ${error.message}<br><br>
-                    <small>Abre la consola (F12) para ver qué envió Google exactamente.</small>
-                `;
+                errorDiv.innerText = "Error de conexión con el servidor";
             } finally {
                 btn.innerText = "Iniciar Sesión";
                 btn.disabled = false;
             }
         }
 
-               function showApp() {
+        function showApp() {
             const loginView = document.getElementById('login-view');
             const appView = document.getElementById('app-view');
             
-            console.log("Intentando mostrar la app...");
-            console.log("LoginView encontrado:", !!loginView);
-            console.log("AppView encontrado:", !!appView);
-            
-            // 1. Ocultamos el Login por fuerza bruta
-            if (loginView) {
-                loginView.style.display = 'none';
-            }
-
-            // 2. Mostramos la App quitando la clase 'hidden'
-            // Usar classList es mejor que style.display cuando hay !important en el CSS
-            if (appView) {
-                appView.classList.remove('hidden');
-                appView.style.display = 'block'; // Refuerzo por seguridad
-            } else {
-                alert("Error crítico: No se encontró la sección 'app-view' en el HTML. Verifica que no hayas borrado el <div> principal.");
-            }
+            if(loginView) loginView.style.display = 'none';
+            if(appView) appView.classList.remove('hidden');
         }
 
         window.addEventListener('DOMContentLoaded', () => {
@@ -197,100 +220,122 @@
         });
 
         // =====================================================
-        // LÓGICA DE LA APP (BUSCAR Y GUARDAR)
+        // LÓGICA DE LA APP
         // =====================================================
         
-        // --- BUSCAR (GET) ---
         async function searchSchool() {
             const query = document.getElementById('searchInput').value.trim();
-            if (!query) return alert("Ingrese CCT");
-            
-            const listDiv = document.getElementById('resultsList');
-            listDiv.innerHTML = '<p style="text-align:center; color:#666;">Buscando en la base de datos...</p>';
-            
+            const resultsDiv = document.getElementById('resultsList');
+            const formSection = document.getElementById('formSection');
+
+            if (!query) return alert("Por favor ingrese una clave CCT");
+
+            // 🔥 CLAVE: Re-activamos el estado borroso del formulario al buscar de nuevo
+            formSection.classList.add('disabled'); 
+
+            resultsDiv.innerHTML = '<div style="padding:15px; text-align:center;">Consultando base de datos...</div>';
+
             try {
-                // CONFIGURACIÓN CORRECTA PARA GET
-                const response = await fetch(`${SCRIPT_URL}?q=${query}`, {
-                    redirect: 'follow' // También necesario para GET
-                });
-                
-                if (!response.ok) throw new Error("Error en la respuesta del servidor");
-                
+                const response = await fetch(`${SCRIPT_URL}?q=${query}`, { redirect: 'follow' });
                 const data = await response.json();
                 
                 if (data.error) throw new Error(data.error);
                 
                 if (!data || data.length === 0) {
-                    listDiv.innerHTML = '<div style="padding:15px; text-align:center;">No se encontraron escuelas con ese CCT.</div>';
+                    resultsDiv.innerHTML = '<div style="padding:15px;">No se encontraron escuelas con esa Clave CCT.</div>';
                     return;
                 }
 
-                let html = '';
+                let html = '<p style="margin-bottom:10px; color:#64748b;">Se encontraron resultados. Seleccione uno para capturar:</p>';
                 data.forEach(row => {
-                    const safeRow = JSON.stringify(row).replace(/"/g, '&quot;');
-                    html += `<div class="result-item" onclick='selectSchool(${safeRow})'>
-                        <strong>${row.nombre}</strong> (${row.cct})<br>
-                        <small>${row.municipio}</small>
-                    </div>`;
+                    html += `
+                    <div class="result-item" onclick="selectSchool(${JSON.stringify(row).replace(/"/g, '&quot;')})">
+                        <div class="result-header">
+                            <div>
+                                <strong>${row.nombre}</strong><br>
+                                <small>${row.municipio}, ${row.localidad}</small>
+                            </div>
+                            <div style="text-align:right;">
+                                <span class="cct-badge">${row.cct}</span><br>
+                                <span class="turno-badge">${row.turno}</span>
+                            </div>
+                        </div>
+                    </div>
+                    `;
                 });
-                listDiv.innerHTML = html;
+                resultsDiv.innerHTML = html;
 
             } catch (error) {
                 console.error(error);
-                listDiv.innerHTML = `<span style="color:red; padding:10px; display:block;">Error: ${error.message}. <br><small>Si dice 'ID incorrecto', verifica el Code.gs.</small></span>`;
+                resultsDiv.innerHTML = `<p style="color:red; padding:15px;">Error: ${error.message}</p>`;
             }
         }
 
-        // --- SELECCIONAR ---
-        function selectSchool(data) {
-            document.getElementById('rowIndex').value = data.rowIndex;
-            document.getElementById('disp_nombre').value = data.nombre;
-            document.getElementById('disp_cct').value = data.cct;
-            document.getElementById('disp_municipio').value = data.municipio;
-            
-            // Cargar campos de captura
-            const inputs = ['total', 'mujeres', 'hombres'];
-            inputs.forEach(key => {
-                const el = document.getElementById(`field_${key}`);
-                const val = data[key];
-                if (val && val !== "" && val !== 0) {
-                    el.value = val;
-                    el.readOnly = true;
-                    el.classList.add('locked-field');
-                } else {
-                    el.value = "";
-                    el.readOnly = false;
-                    el.classList.remove('locked-field');
-                }
-            });
+        function setFieldState(elementId, value) {
+            const input = document.getElementById(elementId);
+            if (value && value !== "" && value !== 0) {
+                input.value = value;
+                input.readOnly = true;
+                input.classList.add('locked-field');
+            } else {
+                input.value = "";
+                input.readOnly = false;
+                input.classList.remove('locked-field');
+            }
+        }
 
-            document.getElementById('formSection').classList.remove('hidden');
-            document.getElementById('resultsList').innerHTML = "";
+        function selectSchool(data) {
+            // Cargar campos de lectura
+            document.getElementById('rowIndex').value = data.rowIndex;
+            document.getElementById('disp_num').value = data.num;
+            document.getElementById('disp_cct').value = data.cct;
+            document.getElementById('disp_nombre').value = data.nombre;
+            document.getElementById('disp_nivel').value = data.nivel;
+            document.getElementById('disp_turno').value = data.turno;
+            document.getElementById('disp_municipio').value = data.municipio;
+            document.getElementById('disp_localidad').value = data.localidad;
+            document.getElementById('disp_direccion').value = data.direccion;
+            document.getElementById('disp_area').value = data.area;
+            document.getElementById('disp_visitador').value = data.visitador;
+
+            // Cargar campos de captura
+            setFieldState('field_total', data.total);
+            setFieldState('field_mujeres', data.mujeres);
+            setFieldState('field_hombres', data.hombres);
+            setFieldState('field_discapacidad', data.discapacidad);
+            setFieldState('field_maya', data.maya);
+
+            // 🔥 CLAVE: Quitamos la clase disabled para ver nítido el formulario
+            document.getElementById('formSection').classList.remove('disabled');
+            
+            document.getElementById('resultsList').innerHTML = ""; 
+            
+            const firstField = document.getElementById('field_total');
+            if (!firstField.readOnly) firstField.focus();
+
             document.getElementById('formSection').scrollIntoView({ behavior: 'smooth' });
         }
 
-        // --- GUARDAR (POST) ---
         async function saveData() {
             const btn = document.querySelector('.btn-save');
             const originalText = btn.innerText;
-            btn.innerText = "Guardando...";
             btn.disabled = true;
+            btn.innerText = "Enviando datos...";
 
             const payload = {
                 action: 'save',
                 rowIndex: document.getElementById('rowIndex').value,
                 total: document.getElementById('field_total').value,
                 mujeres: document.getElementById('field_mujeres').value,
-                hombres: document.getElementById('field_hombres').value
+                hombres: document.getElementById('field_hombres').value,
+                discapacidad: document.getElementById('field_discapacidad').value,
+                maya: document.getElementById('field_maya').value
             };
 
             try {
-                // CONFIGURACIÓN CORRECTA PARA POST
                 const response = await fetch(SCRIPT_URL, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'text/plain;charset=utf-8',
-                    },
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                     redirect: 'follow',
                     body: JSON.stringify(payload)
                 });
@@ -298,33 +343,46 @@
                 const data = await response.json();
                 
                 if (data.success) {
-                    showToast("Guardado correctamente", "success");
-                    selectSchool({
+                    showToast("¡Datos guardados correctamente!", "success");
+                    
+                    const currentData = {
                         rowIndex: payload.rowIndex,
+                        num: document.getElementById('disp_num').value,
+                        cct: document.getElementById('disp_cct').value,
+                        nombre: document.getElementById('disp_nombre').value,
+                        nivel: document.getElementById('disp_nivel').value,
+                        turno: document.getElementById('disp_turno').value,
+                        municipio: document.getElementById('disp_municipio').value,
+                        localidad: document.getElementById('disp_localidad').value,
+                        direccion: document.getElementById('disp_direccion').value,
+                        area: document.getElementById('disp_area').value,
+                        visitador: document.getElementById('disp_visitador').value,
                         total: payload.total,
                         mujeres: payload.mujeres,
-                        hombres: payload.hombres
-                    });
+                        hombres: payload.hombres,
+                        discapacidad: payload.discapacidad,
+                        maya: payload.maya
+                    };
+                    
+                    selectSchool(currentData); 
                 } else {
                     showToast("Error: " + (data.error || data.message), "error");
                 }
             } catch (error) {
                 console.error(error);
-                showToast("Error de conexión", "error");
+                showToast("Error al guardar", "error");
             } finally {
-                btn.innerText = originalText;
                 btn.disabled = false;
+                btn.innerText = originalText;
             }
         }
 
         function showToast(msg, type) {
             const t = document.getElementById('toast');
             t.innerText = msg;
-            t.className = type + ' show';
-            setTimeout(() => t.className = '', 3000);
+            t.className = type === 'success' ? 'success show' : 'error show';
+            setTimeout(() => t.className = type === 'success' ? 'success' : 'error', 3000);
         }
     </script>
 </body>
 </html>
-
-
