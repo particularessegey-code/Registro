@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Captura de Alumnos - Base de Datos Escolar</title>
     <style>
-        /* --- ESTILOS ORIGINALES DE TU PROYECTO --- */
+        /* --- ESTILOS GENERALES DE LA APP --- */
         :root {
             --primary: #1e40af;
             --primary-light: #3b82f6;
@@ -23,10 +23,10 @@
         h1 { color: var(--primary); text-align: center; margin-bottom: 5px; }
         h2 { font-size: 1.2rem; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; margin-bottom: 20px; }
         
-        /* Search Bar */
+        /* Search Bar (Botón Azul) */
         .search-bar { display: flex; gap: 10px; }
         .search-bar input { flex: 1; padding: 12px; border: 2px solid var(--border); border-radius: 8px; font-size: 1.1rem; }
-        .search-bar button { padding: 0 25px; font-size: 1rem; background: var(--primary); color: white; border: none; border-radius: 8px; cursor: pointer; }
+        .search-bar button { padding: 0 25px; font-size: 1rem; background: var(--primary); color: white; border: none; border-radius: 8px; cursor: pointer; width: auto; }
         .search-bar button:hover { background: var(--primary-dark); }
 
         /* Results List */
@@ -43,41 +43,56 @@
         
         label { display: block; font-size: 0.85rem; font-weight: 600; color: #64748b; margin-bottom: 5px; }
         
+        /* Inputs Generales */
         input { width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px; font-size: 0.95rem; box-sizing: border-box; }
         input:focus { outline: 2px solid var(--primary-light); border-color: transparent; }
         
         input[readonly] { background-color: #f1f5f9; color: #94a3b8; border: none; font-weight: 500; }
+        input.locked-field { background-color: #e2e8f0; color: #64748b; border: 1px solid #cbd5e1; cursor: not-allowed; box-shadow: inset 0 1px 2px rgba(0,0,0,0.05); }
         
-        /* CAMPOS BLOQUEADOS POR DATO EXISTENTE */
-        input.locked-field {
-            background-color: #e2e8f0;
-            color: #64748b;
-            border: 1px solid #cbd5e1;
-            cursor: not-allowed;
-            box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);
-        }
-        
-        /* Section Styles */
         .section-title { grid-column: 1/-1; color: var(--primary); font-weight: bold; margin-top: 10px; text-transform: uppercase; letter-spacing: 1px; font-size: 0.8rem; }
 
-        /* Actions */
         .actions { margin-top: 25px; text-align: right; border-top: 1px solid var(--border); padding-top: 20px; }
-        .btn-save { background: var(--success); padding: 12px 30px; font-size: 1.1rem; border: none; color: white; border-radius: 8px; cursor: pointer; box-shadow: 0 4px 6px rgba(16, 185, 129, 0.2); }
+        .btn-save { background: var(--success); padding: 12px 30px; font-size: 1.1rem; border: none; color: white; border-radius: 8px; cursor: pointer; box-shadow: 0 4px 6px rgba(16, 185, 129, 0.2); width: auto; }
         .btn-save:hover { background: #059669; }
         
-        /* Status Overlay for Form */
         #formSection.disabled { opacity: 0.5; pointer-events: none; filter: blur(1px); }
 
-        /* Toast */
         #toast { position: fixed; bottom: 30px; right: 30px; background: #333; color: white; padding: 15px 25px; border-radius: 8px; opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 2000; }
         #toast.show { opacity: 1; }
         #toast.success { background: var(--success); }
         #toast.error { background: #ef4444; }
 
-        /* --- ESTILOS LOGIN --- */
+        /* --- ESTILOS ESPECÍFICOS DEL LOGIN (RESTAURADOS) --- */
         #login-view { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #f4f7f6; display: flex; justify-content: center; align-items: center; z-index: 5000; }
+        
         .login-container { background: #fff; padding: 40px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); text-align: center; width: 90%; max-width: 400px; }
-        .login-container h2 { color: #802434; margin-bottom: 20px; border:none; }
+        
+        .login-container h2 { color: #802434; margin: 0 0 20px 0; border: none; }
+        
+        /* Asegurar que los inputs del login tengan su estilo original y no el de la app */
+        #login-view input { 
+            width: 100%; 
+            padding: 12px; 
+            margin-bottom: 15px; 
+            border: 1px solid #ccc; 
+            border-radius: 4px; 
+            box-sizing: border-box;
+        }
+        
+        /* Botón Rojo Oscuro para Login */
+        #login-view button { 
+            width: 100%; 
+            padding: 12px; 
+            background: #802434; 
+            color: #fff; 
+            border: none; 
+            border-radius: 4px; 
+            cursor: pointer; 
+            font-size: 16px; 
+        }
+        #login-view button:hover { background: #5e1a28; }
+        
         .error-message { color: #d32f2f; margin-top: 15px; font-weight: bold; word-break: break-word; }
     </style>
 </head>
@@ -113,7 +128,7 @@
             </div>
 
             <!-- FORMULARIO DE CAPTURA -->
-            <!-- Nota: Inicia con clase 'disabled' para el efecto borroso -->
+            <!-- Inicia con clase 'disabled' para el efecto borroso -->
             <div class="card disabled" id="formSection">
                 <h2>2. Datos de la Escuela (Referencia)</h2>
                 <form id="captureForm" onsubmit="event.preventDefault(); saveData();">
@@ -230,7 +245,6 @@
 
             if (!query) return alert("Por favor ingrese una clave CCT");
 
-            // 🔥 CLAVE: Re-activamos el estado borroso del formulario al buscar de nuevo
             formSection.classList.add('disabled'); 
 
             resultsDiv.innerHTML = '<div style="padding:15px; text-align:center;">Consultando base de datos...</div>';
@@ -285,7 +299,6 @@
         }
 
         function selectSchool(data) {
-            // Cargar campos de lectura
             document.getElementById('rowIndex').value = data.rowIndex;
             document.getElementById('disp_num').value = data.num;
             document.getElementById('disp_cct').value = data.cct;
@@ -298,16 +311,13 @@
             document.getElementById('disp_area').value = data.area;
             document.getElementById('disp_visitador').value = data.visitador;
 
-            // Cargar campos de captura
             setFieldState('field_total', data.total);
             setFieldState('field_mujeres', data.mujeres);
             setFieldState('field_hombres', data.hombres);
             setFieldState('field_discapacidad', data.discapacidad);
             setFieldState('field_maya', data.maya);
 
-            // 🔥 CLAVE: Quitamos la clase disabled para ver nítido el formulario
             document.getElementById('formSection').classList.remove('disabled');
-            
             document.getElementById('resultsList').innerHTML = ""; 
             
             const firstField = document.getElementById('field_total');
