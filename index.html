@@ -13,6 +13,7 @@
             --text: #334155;
             --border: #cbd5e1;
             --success: #10b981;
+            --danger: #ef4444;
         }
 
         body { font-family: 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--text); padding: 20px; margin: 0; }
@@ -52,10 +53,19 @@
         
         .section-title { grid-column: 1/-1; color: var(--primary); font-weight: bold; margin-top: 10px; text-transform: uppercase; letter-spacing: 1px; font-size: 0.8rem; }
 
-        .actions { margin-top: 25px; text-align: right; border-top: 1px solid var(--border); padding-top: 20px; }
-        .btn-save { background: var(--success); padding: 12px 30px; font-size: 1.1rem; border: none; color: white; border-radius: 8px; cursor: pointer; box-shadow: 0 4px 6px rgba(16, 185, 129, 0.2); width: auto; }
-        .btn-save:hover { background: #059669; }
+        .actions { margin-top: 25px; text-align: right; border-top: 1px solid var(--border); padding-top: 20px; display: flex; gap: 10px; justify-content: flex-end; }
         
+        /* Botón Guardar */
+        .btn-save { background: var(--success); padding: 12px 30px; font-size: 1.1rem; border: none; color: white; border-radius: 8px; cursor: pointer; box-shadow: 0 4px 6px rgba(16, 185, 129, 0.2); }
+        .btn-save:hover:not(:disabled) { background: #059669; }
+        
+        /* Estilo del Botón cuando está DESHABILITADO */
+        .btn-save:disabled { background: #94a3b8; cursor: not-allowed; opacity: 0.7; }
+
+        /* Botón Salir */
+        .btn-logout { background: var(--danger); padding: 12px 30px; font-size: 1.1rem; border: none; color: white; border-radius: 8px; cursor: pointer; }
+        .btn-logout:hover { background: #dc2626; }
+
         #formSection.disabled { opacity: 0.5; pointer-events: none; filter: blur(1px); }
 
         #toast { position: fixed; bottom: 30px; right: 30px; background: #333; color: white; padding: 15px 25px; border-radius: 8px; opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 2000; }
@@ -63,37 +73,35 @@
         #toast.success { background: var(--success); }
         #toast.error { background: #ef4444; }
 
-        /* --- ESTILOS ESPECÍFICOS DEL LOGIN (RESTAURADOS) --- */
-        #login-view { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #f4f7f6; display: flex; justify-content: center; align-items: center; z-index: 5000; }
+        /* --- ESTILOS ESPECÍFICOS DEL LOGIN --- */
+        #login-view { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            /* 🔥 AQUÍ PONES LA IMAGEN DE FONDO */
+            background: url('https://github.com/particularessegey-code/Registro/blob/main/particulares.jpg') no-repeat center center fixed;
+            background-size: cover; 
+            
+            display: flex; justify-content: center; align-items: center; z-index: 5000; 
+        }
         
-        .login-container { background: #fff; padding: 40px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); text-align: center; width: 90%; max-width: 400px; }
+        /* Capa oscura semitransparente para que se lea el login sobre la imagen */
+        #login-view::before {
+            content: "";
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: -1;
+        }
+
+        .login-container { background: #fff; padding: 40px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); text-align: center; width: 90%; max-width: 400px; position: relative; z-index: 1; }
         
         .login-container h2 { color: #802434; margin: 0 0 20px 0; border: none; }
         
-        /* Asegurar que los inputs del login tengan su estilo original y no el de la app */
-        #login-view input { 
-            width: 100%; 
-            padding: 12px; 
-            margin-bottom: 15px; 
-            border: 1px solid #ccc; 
-            border-radius: 4px; 
-            box-sizing: border-box;
-        }
+        #login-view input { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
         
-        /* Botón Rojo Oscuro para Login */
-        #login-view button { 
-            width: 100%; 
-            padding: 12px; 
-            background: #802434; 
-            color: #fff; 
-            border: none; 
-            border-radius: 4px; 
-            cursor: pointer; 
-            font-size: 16px; 
-        }
+        #login-view button { width: 100%; padding: 12px; background: #802434; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; }
         #login-view button:hover { background: #5e1a28; }
         
         .error-message { color: #d32f2f; margin-top: 15px; font-weight: bold; word-break: break-word; }
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
@@ -128,7 +136,6 @@
             </div>
 
             <!-- FORMULARIO DE CAPTURA -->
-            <!-- Inicia con clase 'disabled' para el efecto borroso -->
             <div class="card disabled" id="formSection">
                 <h2>2. Datos de la Escuela (Referencia)</h2>
                 <form id="captureForm" onsubmit="event.preventDefault(); saveData();">
@@ -165,7 +172,9 @@
                     </div>
 
                     <div class="actions">
-                        <button type="submit" class="btn-save">Guardar</button>
+                        <button type="submit" class="btn-save" id="btnSave">Guardar</button>
+                        <!-- Botón Salir (Inicialmente oculto) -->
+                        <button type="button" class="btn-logout hidden" id="btnLogout" onclick="logout()">Salir</button>
                     </div>
                 </form>
             </div>
@@ -227,6 +236,11 @@
             
             if(loginView) loginView.style.display = 'none';
             if(appView) appView.classList.remove('hidden');
+        }
+
+        function logout() {
+            sessionStorage.removeItem('isLoggedIn');
+            location.reload(); // Recarga para volver al login
         }
 
         window.addEventListener('DOMContentLoaded', () => {
@@ -291,10 +305,12 @@
                 input.value = value;
                 input.readOnly = true;
                 input.classList.add('locked-field');
+                return true; // Devuelve true si tiene dato
             } else {
                 input.value = "";
                 input.readOnly = false;
                 input.classList.remove('locked-field');
+                return false; // Devuelve false si está vacío
             }
         }
 
@@ -311,11 +327,26 @@
             document.getElementById('disp_area').value = data.area;
             document.getElementById('disp_visitador').value = data.visitador;
 
-            setFieldState('field_total', data.total);
-            setFieldState('field_mujeres', data.mujeres);
-            setFieldState('field_hombres', data.hombres);
-            setFieldState('field_discapacidad', data.discapacidad);
-            setFieldState('field_maya', data.maya);
+            // Verificamos si hay datos cargados para bloquear/desbloquear botones
+            const hasDataTotal = setFieldState('field_total', data.total);
+            const hasDataMujeres = setFieldState('field_mujeres', data.mujeres);
+            const hasDataHombres = setFieldState('field_hombres', data.hombres);
+            const hasDataDisc = setFieldState('field_discapacidad', data.discapacidad);
+            const hasDataMaya = setFieldState('field_maya', data.maya);
+
+            // Lógica de Botones: Si tiene datos -> Mostrar Salir, Deshabilitar Guardar
+            const btnSave = document.getElementById('btnSave');
+            const btnLogout = document.getElementById('btnLogout');
+
+            if (hasDataTotal || hasDataMujeres || hasDataHombres || hasDataDisc || hasDataMaya) {
+                // Ya hay datos
+                btnSave.disabled = true;
+                btnLogout.classList.remove('hidden');
+            } else {
+                // No hay datos, se va a capturar
+                btnSave.disabled = false;
+                btnLogout.classList.add('hidden');
+            }
 
             document.getElementById('formSection').classList.remove('disabled');
             document.getElementById('resultsList').innerHTML = ""; 
@@ -377,13 +408,15 @@
                     selectSchool(currentData); 
                 } else {
                     showToast("Error: " + (data.error || data.message), "error");
+                    // Habilitar el botón de nuevo si hubo error
+                    btn.disabled = false;
                 }
             } catch (error) {
                 console.error(error);
                 showToast("Error al guardar", "error");
-            } finally {
                 btn.disabled = false;
-                btn.innerText = originalText;
+            } finally {
+                if (!btn.disabled) btn.innerText = originalText;
             }
         }
 
@@ -396,4 +429,3 @@
     </script>
 </body>
 </html>
-
