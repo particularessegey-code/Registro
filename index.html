@@ -183,14 +183,15 @@
 
     <div id="toast"></div>
 
-    <script>
+       <script>
         // =====================================================
         // CONFIGURACIÓN
         // =====================================================
+        // Asegúrate de que esta URL sea la de tu NUEVA implementación
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxdgT6vvVcv0dM06333cJbMSjUwcqFWxMcFSR0_ZGKeZwQjYn0P32F_-Lz3Pfs07zw_lA/exec";
 
         // =====================================================
-        // LÓGICA DE LOGIN
+        // LÓGICA DE LOGIN (OBTIENE EL TOKEN)
         // =====================================================
         async function checkLogin() {
             const user = document.getElementById('username').value;
@@ -210,11 +211,13 @@
                 });
                 
                 const rawText = await response.text();
-                console.log("Respuesta cruda:", rawText); 
-                
                 const data = JSON.parse(rawText);
 
                 if (data.success) {
+                    // 🔑 GUARDAMOS EL TOKEN DE SEGURIDAD
+                    if(data.token) {
+                        sessionStorage.setItem('authToken', data.token);
+                    }
                     sessionStorage.setItem('isLoggedIn', 'true');
                     showApp();
                 } else {
@@ -239,12 +242,17 @@
         }
 
         function logout() {
+            // Al salir, limpiamos el token
+            sessionStorage.removeItem('authToken');
             sessionStorage.removeItem('isLoggedIn');
-            location.reload(); // Recarga para volver al login
+            location.reload(); 
         }
 
         window.addEventListener('DOMContentLoaded', () => {
-            if (sessionStorage.getItem('isLoggedIn') === 'true') showApp();
+            // Verificamos si hay un token guardado, no solo el flag de login
+            if (sessionStorage.getItem('isLoggedIn') === 'true' && sessionStorage.getItem('authToken')) {
+                showApp();
+            }
             document.getElementById('password').addEventListener('keyup', e => { if(e.key==='Enter') checkLogin(); });
         });
 
@@ -305,12 +313,12 @@
                 input.value = value;
                 input.readOnly = true;
                 input.classList.add('locked-field');
-                return true; // Devuelve true si tiene dato
+                return true;
             } else {
                 input.value = "";
                 input.readOnly = false;
                 input.classList.remove('locked-field');
-                return false; // Devuelve false si está vacío
+                return false;
             }
         }
 
@@ -327,23 +335,19 @@
             document.getElementById('disp_area').value = data.area;
             document.getElementById('disp_visitador').value = data.visitador;
 
-            // Verificamos si hay datos cargados para bloquear/desbloquear botones
             const hasDataTotal = setFieldState('field_total', data.total);
             const hasDataMujeres = setFieldState('field_mujeres', data.mujeres);
             const hasDataHombres = setFieldState('field_hombres', data.hombres);
             const hasDataDisc = setFieldState('field_discapacidad', data.discapacidad);
             const hasDataMaya = setFieldState('field_maya', data.maya);
 
-            // Lógica de Botones: Si tiene datos -> Mostrar Salir, Deshabilitar Guardar
             const btnSave = document.getElementById('btnSave');
             const btnLogout = document.getElementById('btnLogout');
 
             if (hasDataTotal || hasDataMujeres || hasDataHombres || hasDataDisc || hasDataMaya) {
-                // Ya hay datos
                 btnSave.disabled = true;
                 btnLogout.classList.remove('hidden');
             } else {
-                // No hay datos, se va a capturar
                 btnSave.disabled = false;
                 btnLogout.classList.add('hidden');
             }
@@ -363,8 +367,12 @@
             btn.disabled = true;
             btn.innerText = "Enviando datos...";
 
+            // 🔑 RECUPERAMOS EL TOKEN
+            const token = sessionStorage.getItem('authToken');
+
             const payload = {
                 action: 'save',
+                token: token, // 🔑 ENVIAMOS EL TOKEN PARA VALIDAR
                 rowIndex: document.getElementById('rowIndex').value,
                 total: document.getElementById('field_total').value,
                 mujeres: document.getElementById('field_mujeres').value,
@@ -408,7 +416,10 @@
                     selectSchool(currentData); 
                 } else {
                     showToast("Error: " + (data.error || data.message), "error");
-                    // Habilitar el botón de nuevo si hubo error
+                    // Si el error es de sesión, forzamos logout
+                    if(data.error && data.error.includes("Sesión inválida")) {
+                        setTimeout(() => logout(), 2000);
+                    }
                     btn.disabled = false;
                 }
             } catch (error) {
@@ -429,5 +440,6 @@
     </script>
 </body>
 </html>
+
 
 
