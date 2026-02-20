@@ -3,445 +3,702 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Captura de Alumnos - Base de Datos Escolar</title>
+    <title>Captura Escolar y Diagnóstico</title>
     <style>
-        /* --- ESTILOS GENERALES DE LA APP --- */
+        /* --- PALETA DE COLORES TEMA GUINDA --- */
         :root {
-            --primary: #1e40af;
-            --primary-light: #3b82f6;
-            --bg: #f8fafc;
-            --text: #334155;
-            --border: #cbd5e1;
+            --primary: #802434;        /* Guinda Oscuro */
+            --primary-dark: #5e1a28;  
+            --primary-light: #9f1239; 
+            --bg: #fef2f2;           
+            --card-bg: #ffffff;
+            --text: #475569;
+            --border: #fecaca;       
             --success: #10b981;
-            --danger: #ef4444;
-        }
-
-        body { font-family: 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--text); padding: 20px; margin: 0; }
-        .container { max-width: 1000px; margin: 0 auto; }
-        
-        .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); margin-bottom: 20px; border: 1px solid var(--border); }
-        
-        h1 { color: var(--primary); text-align: center; margin-bottom: 5px; }
-        h2 { font-size: 1.2rem; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; margin-bottom: 20px; }
-        
-        /* Search Bar (Botón Azul) */
-        .search-bar { display: flex; gap: 10px; }
-        .search-bar input { flex: 1; padding: 12px; border: 2px solid var(--border); border-radius: 8px; font-size: 1.1rem; }
-        .search-bar button { padding: 0 25px; font-size: 1rem; background: var(--primary); color: white; border: none; border-radius: 8px; cursor: pointer; width: auto; }
-        .search-bar button:hover { background: var(--primary-dark); }
-
-        /* Results List */
-        #resultsList { margin-top: 15px; }
-        .result-item { padding: 15px; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 10px; cursor: pointer; background: #fff; transition: all 0.2s; border-left: 5px solid var(--border); }
-        .result-item:hover { border-left-color: var(--primary); transform: translateX(5px); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-        .result-header { display: flex; justify-content: space-between; align-items: center; }
-        .cct-badge { background: #e2e8f0; padding: 4px 8px; border-radius: 4px; font-family: monospace; font-weight: bold; }
-        .turno-badge { background: #fee2e2; color: #991b1b; padding: 4px 8px; border-radius: 4px; font-weight: bold; font-size: 0.9rem; }
-        
-        /* Form Grid */
-        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
-        .full-width { grid-column: 1 / -1; }
-        
-        label { display: block; font-size: 0.85rem; font-weight: 600; color: #64748b; margin-bottom: 5px; }
-        
-        /* Inputs Generales */
-        input { width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px; font-size: 0.95rem; box-sizing: border-box; }
-        input:focus { outline: 2px solid var(--primary-light); border-color: transparent; }
-        
-        input[readonly] { background-color: #f1f5f9; color: #94a3b8; border: none; font-weight: 500; }
-        input.locked-field { background-color: #e2e8f0; color: #64748b; border: 1px solid #cbd5e1; cursor: not-allowed; box-shadow: inset 0 1px 2px rgba(0,0,0,0.05); }
-        
-        .section-title { grid-column: 1/-1; color: var(--primary); font-weight: bold; margin-top: 10px; text-transform: uppercase; letter-spacing: 1px; font-size: 0.8rem; }
-
-        .actions { margin-top: 25px; text-align: right; border-top: 1px solid var(--border); padding-top: 20px; display: flex; gap: 10px; justify-content: flex-end; }
-        
-        /* Botón Guardar */
-        .btn-save { background: var(--success); padding: 12px 30px; font-size: 1.1rem; border: none; color: white; border-radius: 8px; cursor: pointer; box-shadow: 0 4px 6px rgba(16, 185, 129, 0.2); }
-        .btn-save:hover:not(:disabled) { background: #059669; }
-        
-        /* Estilo del Botón cuando está DESHABILITADO */
-        .btn-save:disabled { background: #94a3b8; cursor: not-allowed; opacity: 0.7; }
-
-        /* Botón Salir */
-        .btn-logout { background: var(--danger); padding: 12px 30px; font-size: 1.1rem; border: none; color: white; border-radius: 8px; cursor: pointer; }
-        .btn-logout:hover { background: #dc2626; }
-
-        #formSection.disabled { opacity: 0.5; pointer-events: none; filter: blur(1px); }
-
-        #toast { position: fixed; bottom: 30px; right: 30px; background: #333; color: white; padding: 15px 25px; border-radius: 8px; opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 2000; }
-        #toast.show { opacity: 1; }
-        #toast.success { background: var(--success); }
-        #toast.error { background: #ef4444; }
-
-        /* --- ESTILOS ESPECÍFICOS DEL LOGIN --- */
-        #login-view { 
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-            /* 🔥 AQUÍ PONES LA IMAGEN DE FONDO */
-            background: url('particulares.jpg') no-repeat center center fixed;
-            background-size: cover; 
-            
-            display: flex; justify-content: center; align-items: center; z-index: 5000; 
+            --danger: #991b1b;        
+            --accent-cream: #fffbeb; 
+            --tab-bg: #f3f4f6;
         }
         
-        /* Capa oscura semitransparente para que se lea el login sobre la imagen */
-        #login-view::before {
-            content: "";
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: -1;
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); padding: 20px; margin: 0; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        
+        .card { background: var(--card-bg); padding: 25px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); margin-bottom: 20px; border: 1px solid var(--border); }
+        h1, h2, h4 { color: var(--primary); margin-top: 0; }
+        h1 { text-align: center; }
+        
+        input, select, textarea { 
+            padding: 10px; 
+            border: 1px solid var(--border); 
+            border-radius: 6px; 
+            width: 100%; 
+            box-sizing: border-box; 
+            font-family: inherit;
+            transition: border-color 0.2s;
+        }
+        /* Estilo para SELECT bloqueados */
+         select:disabled {
+             background-color: #f1f5f9;
+             color: #94a3b8;
+             border-color: transparent;
+             cursor: not-allowed;
+             opacity: 0.8;
+             appearance: none; /* Quita la flechita en algunos navegadores */
+             background-image: none;
+}
+        
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(128, 36, 52, 0.1);
         }
 
-        .login-container { background: #fff; padding: 40px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); text-align: center; width: 90%; max-width: 400px; position: relative; z-index: 1; }
+        input.locked, select.locked {
+            background-color: #f1f5f9;
+            color: #94a3b8;
+            border-color: transparent;
+            cursor: not-allowed;
+            opacity: 0.8;
+        }
         
-        .login-container h2 { color: #802434; margin: 0 0 20px 0; border: none; }
+        .grades-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 0.85rem; }
+        .grades-table th, .grades-table td { border: 1px solid var(--border); padding: 6px; text-align: center; }
+        .grades-table th { 
+            background: var(--primary); 
+            color: white; 
+            font-weight: bold; 
+            text-transform: uppercase;
+            font-size: 0.75rem;
+        }
+        .grades-table input { border: none; text-align: center; background: transparent; width: 100%; color: #334155; }
+        .grades-table input:focus { background: var(--accent-cream); outline: none; }
+
+        .tabs { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 20px; border-bottom: 2px solid var(--border); padding-bottom: 10px; }
+        .tab-btn { padding: 10px 20px; background: var(--tab-bg); border: 1px solid var(--border); border-radius: 6px; cursor: pointer; font-weight: bold; color: #64748b; }
+        .tab-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+        .tab-content { display: none; animation: fadeIn 0.3s; }
+        .tab-content.active { display: block; }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .btn { padding: 12px 24px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; color: white; width: 100%; margin-top: 10px; transition: background 0.2s; }
+        .btn-primary { background: var(--primary); } 
+        .btn-primary:hover { background: var(--primary-dark); }
+        .btn-success { background: var(--success); }
+        .btn-danger { background: var(--danger); } 
         
-        #login-view input { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        #login-view { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(128, 36, 52, 0.9); display: flex; justify-content: center; align-items: center; z-index: 5000; }
+        .login-box { background: white; padding: 40px; border-radius: 12px; width: 90%; max-width: 400px; text-align: center; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2); }
         
-        #login-view button { width: 100%; padding: 12px; background: #802434; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; }
-        #login-view button:hover { background: #5e1a28; }
-        
-        .error-message { color: #d32f2f; margin-top: 15px; font-weight: bold; word-break: break-word; }
+        .result-item { padding: 15px; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 10px; cursor: pointer; transition: 0.2s; border-left: 4px solid transparent; }
+        .result-item:hover { border-left-color: var(--primary); background: var(--bg); }
+        .badge { padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; color: white; }
+        .badge-cct { background: #64748b; }
+        .badge-turno { background: var(--primary); }
+
+        .password-container { position: relative; }
+        .password-toggle {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: var(--text);
+            font-size: 1.2rem;
+        }
+
         .hidden { display: none !important; }
+        
+        .toast { position: fixed; bottom: 20px; right: 20px; background: #333; color: white; padding: 15px 25px; border-radius: 8px; opacity: 0; transition: 0.3s; z-index: 6000; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
+        .toast.show { opacity: 1; transform: translateY(-5px); }
+        .toast.success { background: var(--success); }
+        .toast.error { background: var(--danger); color: white; } 
+
+        /* --- SPINNER PARA EL BOTÓN DE LOGIN --- */
+.spinner { 
+    border: 3px solid rgba(255,255,255,0.3); 
+    border-radius: 50%; 
+    border-top: 3px solid white; 
+    width: 16px; 
+    height: 16px; 
+    animation: spin 1s linear infinite; 
+    display: inline-block; 
+    margin-right: 8px; 
+    vertical-align: middle;
+}
+@keyframes spin { 
+    0% { transform: rotate(0deg); } 
+    100% { transform: rotate(360deg); } 
+}
+
+/* --- CLASE PARA MARCAR CAMPOS VACÍOS CON ERROR --- */
+.input-error { 
+    border: 2px solid var(--danger) !important; 
+    background-color: #fef2f2 !important;
+    animation: shake 0.3s;
+}
+@keyframes shake {
+    0% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+    100% { transform: translateX(0); }
+}
+
     </style>
 </head>
 <body>
 
-    <!-- ================= VISTA LOGIN ================= -->
+    <!-- LOGIN -->
     <div id="login-view">
-      <div class="login-container">
-        <h2>Acceso Restringido</h2>
-        <input type="text" id="username" placeholder="Usuario" autocomplete="off">
-        <input type="password" id="password" placeholder="Contraseña" autocomplete="off">
-        <button onclick="checkLogin()">Iniciar Sesión</button>
-        <div id="login-error" class="error-message"></div>
+      <div class="login-box">
+        <h2 style="color:var(--primary); margin-bottom:20px;">Acceso Restringido</h2>
+        
+        <input type="text" id="username" placeholder="Usuario" autofocus>
+        
+        <div class="password-container" style="margin-bottom:20px;">
+            <input type="password" id="password" placeholder="Contraseña">
+            <span class="password-toggle" onclick="togglePassword()">👁️</span>
+        </div>
+
+        <button class="btn btn-primary" onclick="checkLogin()">Ingresar</button>
+        
+        <div id="login-error" style="color: var(--danger); margin-top: 15px; font-weight: bold; min-height: 20px;"></div>
       </div>
     </div>
 
-    <!-- ================= VISTA DE LA APLICACIÓN ================= -->
+    <!-- APP -->
     <div id="app-view" class="hidden">
         <div class="container">
-            <header>
-                <h1>Registro de Alumnos por Escuela</h1>
-                <p style="text-align: center; color: #64748b;">Complete los datos faltantes. Los campos ya capturados se bloquearán.</p>
-            </header>
-
-            <!-- BÚSQUEDA -->
-            <div class="card">
+            <h1>Captura de Estadísticas y Diagnóstico</h1>
+            
+            <!-- 1. BUSCAR -->
+            <div class="card" id="searchCard">
                 <h2>1. Buscar Escuela</h2>
-                <div class="search-bar">
-                    <input type="text" id="searchInput" placeholder="Escriba la Clave CCT (ej: 31PPR...)" onkeypress="if(event.key === 'Enter') searchSchool()">
-                    <button onclick="searchSchool()">Buscar</button>
+                <div style="display:flex; gap:10px;">
+                    <input type="text" id="searchInput" placeholder="Clave CCT..." onkeypress="if(event.key==='Enter') searchSchool()">
+                    <button class="btn btn-primary" style="width:auto;" onclick="searchSchool()">Buscar</button>
                 </div>
-                <div id="resultsList"></div>
+                <div id="resultsList" style="margin-top:20px; max-height: 250px; overflow-y: auto;"></div>
             </div>
 
-            <!-- FORMULARIO DE CAPTURA -->
-            <div class="card disabled" id="formSection">
-                <h2>2. Datos de la Escuela (Referencia)</h2>
-                <form id="captureForm" onsubmit="event.preventDefault(); saveData();">
+            <!-- 2. FORMULARIO PRINCIPAL -->
+            <div class="card hidden" id="formMain">
+                <h2>2. Datos de la Escuela</h2>
+                <div style="background:#fff1f2; padding:15px; border-radius:8px; border:1px solid #fecaca; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; margin-bottom:20px;">
+                    <div>
+                        <h3 style="margin:0; color:var(--primary);" id="disp-nombre"></h3>
+                        <span class="badge badge-cct" id="disp-cct"></span> <span class="badge badge-turno" id="disp-turno"></span>
+                    </div>
+                </div>
+
+                <form id="mainForm" onsubmit="event.preventDefault(); saveMainData();">
                     <input type="hidden" id="rowIndex">
-
-                    <div class="form-grid">
-                        <!-- CAMPOS DE SOLO LECTURA (REFERENCIA) -->
-                        <div class="section-title">Información Identificatoria</div>
-                        
-                        <div><label>NUM</label><input type="text" id="disp_num" readonly></div>
-                        <div><label>CLAVE C.C.T.</label><input type="text" id="disp_cct" readonly></div>
-                        <div class="full-width"><label>NOMBRE ESCUELA</label><input type="text" id="disp_nombre" readonly></div>
-                        <div><label>NIVEL</label><input type="text" id="disp_nivel" readonly></div>
-                        <div><label>TURNO</label><input type="text" id="disp_turno" readonly style="font-weight: bold; color: #991b1b;"></div>
-                        
-                        <div class="section-title">Ubicación y Contacto</div>
-                        
-                        <div class="full-width"><label>MUNICIPIO</label><input type="text" id="disp_municipio" readonly></div>
-                        <div class="full-width"><label>LOCALIDAD</label><input type="text" id="disp_localidad" readonly></div>
-                        <div class="full-width"><label>DIRECCION</label><input type="text" id="disp_direccion" readonly></div>
-                        <div><label>AREA</label><input type="text" id="disp_area" readonly></div>
-                        <div><label>VISITADOR</label><input type="text" id="disp_visitador" readonly></div>
-
-                        <!-- CAPTURA (DATOS FALTANTES) -->
-                        <div class="section-title" style="margin-top: 20px; border-top: 1px dashed var(--border); padding-top: 15px;">
-                            ⬇ Captura de Datos
-                        </div>
-
-                        <div><label>TOTAL DE ALUMNOS</label><input type="number" id="field_total" required min="0"></div>
-                        <div><label>ALUMNOS MUJER</label><input type="number" id="field_mujeres" required min="0"></div>
-                        <div><label>ALUMNOS HOMBRES</label><input type="number" id="field_hombres" required min="0"></div>
-                        <div><label>TOTAL DISCAPACIDAD</label><input type="number" id="field_discapacidad" required min="0"></div>
-                        <div><label>MAYA HABLANTE</label><input type="number" id="field_maya" required min="0"></div>
+                    <input type="hidden" id="cct">
+                    <input type="hidden" id="nombre">
+                    
+                    <!-- TABLA GRADOS RESUMIDA -->
+                    <div style="overflow-x:auto;">
+                        <table class="grades-table">
+                            <thead>
+                                <tr>
+                                    <th>GRADO</th>
+                                    <th colspan="2">TOTAL DE ALUMNOS GENERAL POR GRADO</th>
+                                    <th colspan="2">¿CANTIDAD DE ALUMNOS CON NECESIDADES EDUCATIVAS ESPECIFICAS (NEE) CON O SIN DISCAPACIDAD?</th>
+                                </tr>
+                                <tr>
+                                    <th></th><th>H</th><th>M</th><th>H</th><th>M</th>
+                                </tr>
+                            </thead>
+                            <tbody id="gradesBodyMain"></tbody>
+                        </table>
                     </div>
 
-                    <div class="actions">
-                        <button type="submit" class="btn-save" id="btnSave">Guardar</button>
-                        <!-- Botón Salir (Inicialmente oculto) -->
-                        <button type="button" class="btn-logout hidden" id="btnLogout" onclick="logout()">Salir</button>
+                    <!-- PREGUNTAS CLAVE -->
+                    <div style="display:grid; gap:15px; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); margin-top:20px;">
+                        <div>
+                            <label style="display:block; font-weight:bold; margin-bottom:5px; color:var(--primary);">¿Cuenta con un área específica de atención psicopedagógica?</label>
+                            <select id="field_psico" required><option value="">Seleccione...</option><option value="NO">NO</option><option value="SI">SÍ</option></select>
+                        </div>
+                        <div>
+                            <label style="display:block; font-weight:bold; margin-bottom:5px; color:var(--primary);">¿Los alumnos con NEE con o sin discapacidad cuentan con diagnóstico?</label>
+                            <select id="field_diag_flag" required><option value="">Seleccione...</option><option value="NO">NO</option><option value="SI">SÍ (Ir a detalle)</option></select>
+                        </div>
+                    </div>
+
+                    <div style="margin-top:30px; display:flex; gap:10px;">
+                        <button type="submit" class="btn btn-primary" id="btnSaveMain">Guardar Datos Principales</button>
+                        <button type="button" class="btn btn-danger hidden" id="btnLogout" onclick="logout()">Salir</button>
                     </div>
                 </form>
             </div>
+
+            <!-- 3. FORMULARIO DIAGNÓSTICO DETALLADO -->
+            <div class="card hidden" id="formDiag">
+                <h2>3. Detalle de Diagnóstico (Categorías)</h2>
+                <p style="font-size:0.9rem; color:#64748b;">Seleccione una categoría para capturar los datos por grado y género.</p>
+
+                <!-- TABS -->
+                <div class="tabs">
+                    <button class="tab-btn active" onclick="openTab(event, 'tab1')">Neurodesarrollo</button>
+                    <button class="tab-btn" onclick="openTab(event, 'tab2')">Sensorial / Intelectual</button>
+                    <button class="tab-btn" onclick="openTab(event, 'tab3')">Visual / Auditiva</button>
+                    <button class="tab-btn" onclick="openTab(event, 'tab4')">Otros</button>
+                </div>
+
+                <form id="diagForm" onsubmit="event.preventDefault(); saveDiagnosis();">
+                    
+                    <!-- TAB 1: Neuro (TEA, TDA, TDAH) -->
+                    <div id="tab1" class="tab-content active">
+                        <h4>Trastornos del Neurodesarrollo</h4>
+                        <div id="tables-cat-1-2-3"></div> 
+                    </div>
+
+                    <!-- TAB 2: Sensorial (Intelectual, Lenguaje, Motriz) -->
+                    <div id="tab2" class="tab-content">
+                        <h4>Intelectual y Sensorial</h4>
+                        <div id="tables-cat-4-5-6"></div>
+                    </div>
+
+                    <!-- TAB 3: Sensorial Agudo (Visual, Auditiva) -->
+                    <div id="tab3" class="tab-content">
+                        <h4>Discapacidades Sensoriales</h4>
+                        <div id="tables-cat-7-8"></div>
+                    </div>
+
+                    <!-- TAB 4: Otros -->
+                    <div id="tab4" class="tab-content">
+                        <h4>Procesos y Otros</h4>
+                        <div id="tables-cat-9-10"></div>
+                        
+                        <div style="margin-top:20px;">
+                            <label style="font-weight:bold; color:var(--primary);">Especificación (Si seleccionó "Otro"):</label>
+                            <textarea id="diag_espec" rows="3" placeholder="Describa el diagnóstico..."></textarea>
+                        </div>
+                    </div>
+
+                    <div style="margin-top:30px;">
+                        <button type="submit" class="btn btn-primary">Guardar Todo el Diagnóstico</button>
+                        <button type="button" class="btn btn-success" onclick="goBackToMain()">Volver a Datos Principales</button>
+                    </div>
+                </form>
+            </div>
+
         </div>
     </div>
 
-    <div id="toast"></div>
+    <div id="toast" class="toast">Notificación</div>
 
-       <script>
-        // =====================================================
-        // CONFIGURACIÓN
-        // =====================================================
-        // Asegúrate de que esta URL sea la de tu NUEVA implementación
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyc8w0K5jvLtEqpi1idw9EZ-LVUDF5AFZoz_ZcBZ7McY6Bfjr_hws3OiULejTkKmGGkYg/exec";
+    <script>
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwWASf-phpdnNbT7KNtVy_LpO3Om9WcAcV2Z-gpA36X4SYZMYlTlJ7Z_M-HziMgKyDUDg/exec";
 
-        // =====================================================
-        // LÓGICA DE LOGIN (OBTIENE EL TOKEN)
-        // =====================================================
-        async function checkLogin() {
-            const user = document.getElementById('username').value;
-            const pass = document.getElementById('password').value;
-            const btn = document.querySelector('#login-view button');
-            const errorDiv = document.getElementById('login-error');
+        const DIAG_CATS = [
+            { id: 'cat1', name: 'TEA (Autismo)', cols: ['1ºH', '2ºH', '3ºH', '4ºH', '5ºH', '6ºH', '1ºM', '2ºM', '3ºM', '4ºM', '5ºM', '6ºM'] },
+            { id: 'cat2', name: 'TDA (Atención)', cols: ['1ºH', '2ºH', '3ºH', '4ºH', '5ºH', '6ºH', '1ºM', '2ºM', '3ºM', '4ºM', '5ºM', '6ºM'] },
+            { id: 'cat3', name: 'TDAH (Hiperactividad)', cols: ['1ºH', '2ºH', '3ºH', '4ºH', '5ºH', '6ºH', '1ºM', '2ºM', '3ºM', '4ºM', '5ºM', '6ºM'] },
+            { id: 'cat4', name: 'Intelectual', cols: ['1ºH', '2ºH', '3ºH', '4ºH', '5ºH', '6ºH', '1ºM', '2ºM', '3ºM', '4ºM', '5ºM', '6ºM'] },
+            { id: 'cat5', name: 'Lenguaje', cols: ['1ºH', '2ºH', '3ºH', '4ºH', '5ºH', '6ºH', '1ºM', '2ºM', '3ºM', '4ºM', '5ºM', '6ºM'] },
+            { id: 'cat6', name: 'Motriz', cols: ['1ºH', '2ºH', '3ºH', '4ºH', '5ºH', '6ºH', '1ºM', '2ºM', '3ºM', '4ºM', '5ºM', '6ºM'] },
+            { id: 'cat7', name: 'Visual', cols: ['1ºH', '2ºH', '3ºH', '4ºH', '5ºH', '6ºH', '1ºM', '2ºM', '3ºM', '4ºM', '5ºM', '6ºM'] },
+            { id: 'cat8', name: 'Auditiva', cols: ['1ºH', '2ºH', '3ºH', '4ºH', '5ºH', '6ºH', '1ºM', '2ºM', '3ºM', '4ºM', '5ºM', '6ºM'] },
+            { id: 'cat9', name: 'En Proceso', cols: ['1ºH', '2ºH', '3ºH', '4ºH', '5ºH', '6ºH', '1ºM', '2ºM', '3ºM', '4ºM', '5ºM', '6ºM'] },
+            { id: 'cat10', name: 'Otro', cols: ['1ºH', '2ºH', '3ºH', '4ºH', '5ºH', '6ºH', '1ºM', '2ºM', '3ºM', '4ºM', '5ºM', '6ºM'] }
+        ];
 
-            btn.innerText = "Verificando...";
-            btn.disabled = true;
-            
-            try {
-                const response = await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                    redirect: 'follow',
-                    body: JSON.stringify({ action: 'login', user: user, pass: pass })
-                });
-                
-                const rawText = await response.text();
-                const data = JSON.parse(rawText);
+        // --- LÓGICA GENERAL ---
+       async function checkLogin() {
+    const u = document.getElementById('username').value.trim();
+    const p = document.getElementById('password').value.trim();
+    const errorDiv = document.getElementById('login-error');
+    
+    if(!u || !p) {
+        errorDiv.innerText = "Por favor llene ambos campos";
+        return;
+    }
 
-                if (data.success) {
-                    // 🔑 GUARDAMOS EL TOKEN DE SEGURIDAD
-                    if(data.token) {
-                        sessionStorage.setItem('authToken', data.token);
-                    }
-                    sessionStorage.setItem('isLoggedIn', 'true');
-                    showApp();
-                } else {
-                    errorDiv.innerText = data.message || "Error de acceso";
-                    document.getElementById('password').value = '';
-                }
-            } catch (error) {
-                console.error(error);
-                errorDiv.innerText = "Error de conexión con el servidor";
-            } finally {
-                btn.innerText = "Iniciar Sesión";
-                btn.disabled = false;
-            }
+    // --- EFECTO SPINNER EN EL BOTÓN ---
+    const btn = document.querySelector('#login-view button');
+    const originalText = btn.innerText;
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span> Verificando...';
+
+    try {
+        const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({action:'login', user:u, pass:p}) });
+        const d = await res.json();
+        
+        if(d.success) {
+            sessionStorage.setItem('authToken', d.token);
+            document.getElementById('login-view').style.display = 'none';
+            document.getElementById('app-view').classList.remove('hidden');
+        } else {
+            errorDiv.innerText = "Usuario o contraseña incorrectos";
+            document.getElementById('password').value = '';
+            document.getElementById('password').focus();
+        }
+    } catch (e) {
+        errorDiv.innerText = "Error de conexión";
+    } finally {
+        // --- RESTAURAR BOTÓN ---
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+    }
+}
+        function togglePassword() {
+            const input = document.getElementById('password');
+            const type = input.getAttribute('type') === 'password' ? 'text' : 'password';
+            input.setAttribute('type', type);
         }
 
-        function showApp() {
-            const loginView = document.getElementById('login-view');
-            const appView = document.getElementById('app-view');
-            
-            if(loginView) loginView.style.display = 'none';
-            if(appView) appView.classList.remove('hidden');
-        }
-
-        function logout() {
-            // Al salir, limpiamos el token
-            sessionStorage.removeItem('authToken');
-            sessionStorage.removeItem('isLoggedIn');
-            location.reload(); 
-        }
-
-        window.addEventListener('DOMContentLoaded', () => {
-            // Verificamos si hay un token guardado, no solo el flag de login
-            if (sessionStorage.getItem('isLoggedIn') === 'true' && sessionStorage.getItem('authToken')) {
-                showApp();
-            }
-            document.getElementById('password').addEventListener('keyup', e => { if(e.key==='Enter') checkLogin(); });
+        document.getElementById('username').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') document.getElementById('password').focus();
+        });
+        document.getElementById('password').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') checkLogin();
         });
 
-        // =====================================================
-        // LÓGICA DE LA APP
-        // =====================================================
-        
+        function logout() { location.reload(); }
+
         async function searchSchool() {
-            const query = document.getElementById('searchInput').value.trim();
-            const resultsDiv = document.getElementById('resultsList');
-            const formSection = document.getElementById('formSection');
-
-            if (!query) return alert("Por favor ingrese una clave CCT");
-
-            formSection.classList.add('disabled'); 
-
-            resultsDiv.innerHTML = '<div style="padding:15px; text-align:center;">Consultando base de datos...</div>';
-
-            try {
-                const response = await fetch(`${SCRIPT_URL}?q=${query}`, { redirect: 'follow' });
-                const data = await response.json();
-                
-                if (data.error) throw new Error(data.error);
-                
-                if (!data || data.length === 0) {
-                    resultsDiv.innerHTML = '<div style="padding:15px;">No se encontraron escuelas con esa Clave CCT.</div>';
-                    return;
-                }
-
-                let html = '<p style="margin-bottom:10px; color:#64748b;">Se encontraron resultados. Seleccione uno para capturar:</p>';
-                data.forEach(row => {
-                    html += `
-                    <div class="result-item" onclick="selectSchool(${JSON.stringify(row).replace(/"/g, '&quot;')})">
-                        <div class="result-header">
-                            <div>
-                                <strong>${row.nombre}</strong><br>
-                                <small>${row.municipio}, ${row.localidad}</small>
-                            </div>
-                            <div style="text-align:right;">
-                                <span class="cct-badge">${row.cct}</span><br>
-                                <span class="turno-badge">${row.turno}</span>
-                            </div>
-                        </div>
-                    </div>
-                    `;
-                });
-                resultsDiv.innerHTML = html;
-
-            } catch (error) {
-                console.error(error);
-                resultsDiv.innerHTML = `<p style="color:red; padding:15px;">Error: ${error.message}</p>`;
-            }
-        }
-
-        function setFieldState(elementId, value) {
-            const input = document.getElementById(elementId);
-            if (value && value !== "" && value !== 0) {
-                input.value = value;
-                input.readOnly = true;
-                input.classList.add('locked-field');
-                return true;
-            } else {
-                input.value = "";
-                input.readOnly = false;
-                input.classList.remove('locked-field');
-                return false;
-            }
-        }
-
-        function selectSchool(data) {
-            document.getElementById('rowIndex').value = data.rowIndex;
-            document.getElementById('disp_num').value = data.num;
-            document.getElementById('disp_cct').value = data.cct;
-            document.getElementById('disp_nombre').value = data.nombre;
-            document.getElementById('disp_nivel').value = data.nivel;
-            document.getElementById('disp_turno').value = data.turno;
-            document.getElementById('disp_municipio').value = data.municipio;
-            document.getElementById('disp_localidad').value = data.localidad;
-            document.getElementById('disp_direccion').value = data.direccion;
-            document.getElementById('disp_area').value = data.area;
-            document.getElementById('disp_visitador').value = data.visitador;
-
-            const hasDataTotal = setFieldState('field_total', data.total);
-            const hasDataMujeres = setFieldState('field_mujeres', data.mujeres);
-            const hasDataHombres = setFieldState('field_hombres', data.hombres);
-            const hasDataDisc = setFieldState('field_discapacidad', data.discapacidad);
-            const hasDataMaya = setFieldState('field_maya', data.maya);
-
-            const btnSave = document.getElementById('btnSave');
-            const btnLogout = document.getElementById('btnLogout');
-
-            if (hasDataTotal || hasDataMujeres || hasDataHombres || hasDataDisc || hasDataMaya) {
-                btnSave.disabled = true;
-                btnLogout.classList.remove('hidden');
-            } else {
-                btnSave.disabled = false;
-                btnLogout.classList.add('hidden');
-            }
-
-            document.getElementById('formSection').classList.remove('disabled');
-            document.getElementById('resultsList').innerHTML = ""; 
+            const q = document.getElementById('searchInput').value.trim();
+            if(!q) return;
+            const list = document.getElementById('resultsList');
+            list.innerHTML = 'Buscando...';
+            const res = await fetch(`${SCRIPT_URL}?q=${q}`);
+            const data = await res.json();
             
-            const firstField = document.getElementById('field_total');
-            if (!firstField.readOnly) firstField.focus();
-
-            document.getElementById('formSection').scrollIntoView({ behavior: 'smooth' });
+            list.innerHTML = data.map(r => `
+                <div class="result-item" onclick="selectSchool(${JSON.stringify(r).replace(/"/g, '&quot;')})">
+                    <strong>${r.nombre}</strong><br>
+                    <span class="badge badge-cct">${r.cct}</span> <span class="badge badge-turno">${r.turno}</span><br>
+                    <small>${r.nivel} - ${r.municipio}</small>
+                </div>
+            `).join('');
         }
 
-        async function saveData() {
-            const btn = document.querySelector('.btn-save');
-            const originalText = btn.innerText;
-            btn.disabled = true;
-            btn.innerText = "Enviando datos...";
+        let currentSchoolLevel = "";
 
-            // 🔑 RECUPERAMOS EL TOKEN
-            const token = sessionStorage.getItem('authToken');
+        function selectSchool(row) {
+    document.getElementById('formMain').classList.remove('hidden');
+    document.getElementById('formDiag').classList.add('hidden');
+    document.getElementById('resultsList').innerHTML = '';
 
-            const payload = {
-                action: 'save',
-                token: token, // 🔑 ENVIAMOS EL TOKEN PARA VALIDAR
-                rowIndex: document.getElementById('rowIndex').value,
-                total: document.getElementById('field_total').value,
-                mujeres: document.getElementById('field_mujeres').value,
-                hombres: document.getElementById('field_hombres').value,
-                discapacidad: document.getElementById('field_discapacidad').value,
-                maya: document.getElementById('field_maya').value
-            };
+    document.getElementById('rowIndex').value = row.rowIndex;
+    document.getElementById('cct').value = row.cct;
+    document.getElementById('nombre').value = row.nombre;
+    
+    document.getElementById('disp-nombre').innerText = row.nombre;
+    document.getElementById('disp-cct').innerText = row.cct;
+    document.getElementById('disp-turno').innerText = row.turno;
 
-            try {
-                const response = await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                    redirect: 'follow',
-                    body: JSON.stringify(payload)
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    showToast("¡Datos guardados correctamente!", "success");
-                    
-                    const currentData = {
-                        rowIndex: payload.rowIndex,
-                        num: document.getElementById('disp_num').value,
-                        cct: document.getElementById('disp_cct').value,
-                        nombre: document.getElementById('disp_nombre').value,
-                        nivel: document.getElementById('disp_nivel').value,
-                        turno: document.getElementById('disp_turno').value,
-                        municipio: document.getElementById('disp_municipio').value,
-                        localidad: document.getElementById('disp_localidad').value,
-                        direccion: document.getElementById('disp_direccion').value,
-                        area: document.getElementById('disp_area').value,
-                        visitador: document.getElementById('disp_visitador').value,
-                        total: payload.total,
-                        mujeres: payload.mujeres,
-                        hombres: payload.hombres,
-                        discapacidad: payload.discapacidad,
-                        maya: payload.maya
-                    };
-                    
-                    selectSchool(currentData); 
-                } else {
-                    showToast("Error: " + (data.error || data.message), "error");
-                    // Si el error es de sesión, forzamos logout
-                    if(data.error && data.error.includes("Sesión inválida")) {
-                        setTimeout(() => logout(), 2000);
-                    }
-                    btn.disabled = false;
-                }
-            } catch (error) {
-                console.error(error);
-                showToast("Error al guardar", "error");
-                btn.disabled = false;
-            } finally {
-                if (!btn.disabled) btn.innerText = originalText;
-            }
+    const n = row.nivel.toUpperCase();
+    currentSchoolLevel = n.includes('PREESCOLAR') || n.includes('SECUNDARIA') ? 3 : 6;
+
+    // Render Tabla Principal
+    const tbody = document.getElementById('gradesBodyMain');
+    tbody.innerHTML = '';
+    
+    const hasData = (row.th && row.th.some(v=>v)) || (row.tm && row.tm.some(v=>v));
+
+    for(let i=0; i<currentSchoolLevel; i++) {
+        tbody.innerHTML += `
+            <tr>
+                <td>${i+1}º</td>
+                <td><input type="number" name="th_${i}" value="${row.th && row.th[i]||''}" min="0"></td>
+                <td><input type="number" name="tm_${i}" value="${row.tm && row.tm[i]||''}" min="0"></td>
+                <td><input type="number" name="nh_${i}" value="${row.nh && row.nh[i]||''}" min="0"></td>
+                <td><input type="number" name="nm_${i}" value="${row.nm && row.nm[i]||''}" min="0"></td>
+            </tr>`;
+    }
+    
+    document.getElementById('field_psico').value = row.psico || '';
+    document.getElementById('field_diag_flag').value = row.diag_flag || '';
+
+    const btnSaveMain = document.getElementById('btnSaveMain');
+    const btnLogout = document.getElementById('btnLogout');
+    
+    // Obtenemos todos los inputs y selects
+    const inputs = document.querySelectorAll('#mainForm input:not([type="hidden"])');
+    const selects = document.querySelectorAll('#mainForm select');
+
+    if (hasData) {
+        // --- HAY DATOS: BLOQUEAR TODO ---
+        // Bloquear Inputs con ReadOnly (para mantener el gris y estilo de texto)
+        inputs.forEach(el => {
+            el.readOnly = true;
+            el.classList.add('locked');
+        });
+        // Bloquear Selects con Disabled (para quitar la flechita)
+        selects.forEach(el => {
+            el.disabled = true;
+        });
+
+        btnSaveMain.classList.add('hidden'); 
+        
+        if(row.diag_flag === 'SI') {
+            loadDiagnosisForm(); 
+        } else {
+            btnLogout.classList.remove('hidden');
         }
+    } else {
+        // --- NO HAY DATOS: DESBLOQUEAR ---
+        inputs.forEach(el => {
+            el.readOnly = false;
+            el.classList.remove('locked');
+        });
+        selects.forEach(el => {
+            el.disabled = false;
+        });
+        
+        btnSaveMain.classList.remove('hidden');
+        btnSaveMain.innerText = "Guardar Datos Principales";
+        btnSaveMain.disabled = false;
+        btnLogout.classList.add('hidden');
+    }
+
+    document.getElementById('formMain').scrollIntoView({behavior:'smooth'});
+}
+
+        async function saveMainData() {
+    // 1. Validación de Campos Vacíos
+    const inputs = document.querySelectorAll('#gradesBodyMain input');
+    let hasEmpty = false;
+    
+    inputs.forEach(input => {
+        // Quitamos clase de error previa
+        input.classList.remove('input-error');
+        // Verificamos si está vacío
+        if (input.value === "") {
+            input.classList.add('input-error');
+            hasEmpty = true;
+        }
+    });
+
+    if (hasEmpty) {
+        showToast("Debe capturar al menos '0' en todos los campos de alumnos.", "error");
+        return; // Detenemos el guardado
+    }
+
+    if(!confirm("¿Seguro que desea guardar los datos principales? No podrán modificarse después.")) return;
+
+    const btn = document.getElementById('btnSaveMain');
+    btn.disabled = true;
+    
+    const th=[], tm=[], nh=[], nm=[];
+    document.querySelectorAll('#gradesBodyMain tr').forEach(tr => {
+        th.push(tr.querySelector('[name^="th"]').value);
+        tm.push(tr.querySelector('[name^="tm"]').value);
+        nh.push(tr.querySelector('[name^="nh"]').value);
+        nm.push(tr.querySelector('[name^="nm"]').value);
+    });
+
+    const payload = {
+        action: 'saveMainData',
+        token: sessionStorage.getItem('authToken'),
+        rowIndex: document.getElementById('rowIndex').value,
+        th, tm, nh, nm,
+        psico: document.getElementById('field_psico').value,
+        diag_flag: document.getElementById('field_diag_flag').value
+    };
+
+    const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload), redirect: 'follow' });
+    const d = await res.json();
+
+    if(d.success) {
+        showToast("Datos principales guardados y bloqueados", "success");
+        
+        // BLOQUEO INMEDIATO
+        inputs.forEach(el => {
+            el.readOnly = true;
+            el.classList.add('locked');
+        });
+        document.querySelectorAll('#mainForm select').forEach(el => {
+            el.disabled = true;
+        });
+        
+        btn.classList.add('hidden');
+
+        // LÓGICA DE RESPUESTA A DIAGNÓSTICO
+        if(payload.diag_flag === 'SI') {
+            // Si es SÍ, pasamos al diagnóstico
+            loadDiagnosisForm();
+        } else {
+            // Si es NO, terminamos aquí
+            // Ocultamos la tarjeta de búsqueda para limpiar la vista
+            document.getElementById('searchCard').classList.add('hidden');
+            // Mostramos el botón de salir claramente
+            const btnLogout = document.getElementById('btnLogout');
+            btnLogout.classList.remove('hidden');
+            btnLogout.innerText = "Salir / Finalizar";
+        }
+    } else {
+        showToast("Error: " + d.error, "error"); 
+        btn.disabled = false;
+    }
+}
+
+        // --- LÓGICA DE DIAGNÓSTICO ---
+
+        async function loadDiagnosisForm() {
+    document.getElementById('formDiag').classList.remove('hidden');
+    document.getElementById('formDiag').scrollIntoView({behavior:'smooth'});
+    
+    generateDiagTables('tables-cat-1-2-3', [0,1,2], currentSchoolLevel); 
+    generateDiagTables('tables-cat-4-5-6', [3,4,5], currentSchoolLevel); 
+    generateDiagTables('tables-cat-7-8', [6,7], currentSchoolLevel);     
+    generateDiagTables('tables-cat-9-10', [8,9], currentSchoolLevel);   
+
+    // ✅ CORRECCIÓN: Enviar también el TURNO para buscar exacto
+    const cct = document.getElementById('cct').value;
+    const turno = document.getElementById('disp-turno').innerText; // Agregamos esto
+
+    const res = await fetch(SCRIPT_URL, {
+        method: 'POST',
+        body: JSON.stringify({
+            action:'getDiagnosis', 
+            token: sessionStorage.getItem('authToken'), 
+            cct: cct, 
+            turno: turno // <--- AGREGAMOS EL TURNO
+        })
+    });
+    const d = await res.json();
+
+    if(d.exists) {
+        document.getElementById('diag_espec').value = d.espec || '';
+        DIAG_CATS.forEach((cat, idx) => {
+            const arr = d[`cat${idx+1}`] || [];
+            arr.forEach((val, colIdx) => {
+                const input = document.getElementById(`${cat.id}_${colIdx}`);
+                if(input) input.value = val;
+            });
+        });
+    }
+}
+
+        function generateDiagTables(containerId, catIndices, numGrades) {
+            const container = document.getElementById(containerId);
+            let html = '';
+            
+            catIndices.forEach(catIdx => {
+                const cat = DIAG_CATS[catIdx];
+                html += `<h5 style="color:var(--primary); border-bottom:1px solid #eee; margin-top:15px;">${cat.name}</h5>`;
+                html += `<table class="grades-table"><thead><tr><th></th><th colspan="${numGrades}">HOMBRES</th><th colspan="${numGrades}">MUJERES</th></tr><tr><th>G</th>`;
+                
+                for(let i=1; i<=numGrades; i++) html += `<th>${i}º</th>`;
+                for(let i=1; i<=numGrades; i++) html += `<th>${i}º</th>`;
+                html += `</tr></thead><tbody>`;
+
+                html += `<tr>`;
+                html += `<td style="background:#fff1f2; color:#802434; font-weight:bold;">Tot</td>`;
+                
+                // 🔥 CORRECCIÓN: HOMBRES SIEMPRE USAN ÍNDICES 0-5
+                for(let i=0; i<numGrades; i++) html += `<td><input type="number" id="${cat.id}_${i}" min="0"></td>`;
+                
+                // 🔥 CORRECCIÓN: MUJERES SIEMPRE USAN ÍNDICES 6-11
+                // Si numGrades es 3, generaremos IDs 6, 7, 8
+                // Si numGrades es 6, generaremos IDs 6, 7, 8, 9, 10, 11
+                for(let i=0; i<numGrades; i++) html += `<td><input type="number" id="${cat.id}_${6+i}" min="0"></td>`;
+                
+                html += `</tr></tbody></table>`;
+            });
+            
+            container.innerHTML = html;
+        }
+
+        function openTab(evt, tabName) {
+            const x = document.getElementsByClassName("tab-content");
+            for (let i = 0; i < x.length; i++) { x[i].style.display = "none"; }
+            const tablinks = document.getElementsByClassName("tab-btn");
+            for (let i = 0; i < tablinks.length; i++) { tablinks[i].className = tablinks[i].className.replace(" active", ""); }
+            document.getElementById(tabName).style.display = "block";
+            evt.currentTarget.className += " active";
+        }
+
+     async function saveDiagnosis() {
+    if(!confirm("¿Está seguro de guardar toda la información de diagnóstico?")) return;
+    
+    const btn = document.querySelector('#diagForm button[type="submit"]');
+    btn.disabled = true; btn.innerText = "Guardando...";
+
+    const payloads = {};
+    DIAG_CATS.forEach((cat, idx) => {
+        // Inicializamos un array de 12 espacios vacíos para la hoja
+        const arr = new Array(12).fill("");
+        
+        // 🔥 CORRECCIÓN: Usamos currentSchoolLevel en lugar de numGrades
+        // Llenar datos de HOMBRES (Indices 0 a numGrades-1)
+        for(let i=0; i<currentSchoolLevel; i++) { 
+            const input = document.getElementById(`${cat.id}_${i}`);
+            if(input) arr[i] = input.value;
+        }
+        // Llenar datos de MUJERES (Indices 6 a 6+numGrades-1)
+        for(let i=0; i<currentSchoolLevel; i++) { 
+            const input = document.getElementById(`${cat.id}_${6+i}`);
+            if(input) arr[6+i] = input.value;
+        }
+        
+        payloads[`cat${idx+1}`] = arr;
+    });
+
+    const payload = {
+        action: 'saveDiagnosis',
+        token: sessionStorage.getItem('authToken'),
+        cct: document.getElementById('cct').value,
+        nombre: document.getElementById('nombre').value,
+        turno: document.getElementById('disp-turno').innerText,
+        area: "", 
+        visitador: "",
+        num: document.getElementById('rowIndex').value,
+        espec: document.getElementById('diag_espec').value,
+        ...payloads
+    };
+
+    try {
+        // Usamos text/plain para evitar bloqueos CORS
+        const res = await fetch(SCRIPT_URL, { 
+            method: 'POST', 
+            headers: { 'Content-Type': 'text/plain' },
+            body: JSON.stringify(payload)
+        });
+
+        const d = await res.json();
+
+        if(d.success) {
+            showToast("Diagnóstico guardado correctamente", "success");
+            btn.disabled = false; btn.innerText = "Guardar Todo el Diagnóstico";
+        } else {
+            showToast("Error: " + d.error, "error"); 
+            btn.disabled = false;
+        }
+    } catch (error) {
+        console.error("Error de conexión:", error);
+        showToast("Error al conectar con el servidor", "error");
+        btn.disabled = false;
+    }
+}
+
+        function goBackToMain() {
+    // 1. Ocultamos la sección de diagnóstico
+    document.getElementById('formDiag').classList.add('hidden');
+    
+    // 2. Mostramos la sección de Datos Principales (que ya está bloqueada)
+    document.getElementById('formMain').classList.remove('hidden');
+    
+    // 3. Mostramos la barra de búsqueda para que pueda buscar otra escuela si quiere
+    document.getElementById('searchCard').classList.remove('hidden');
+    
+    // 4. Mostramos el botón de Salir
+    const btnLogout = document.getElementById('btnLogout');
+    btnLogout.classList.remove('hidden');
+    btnLogout.innerText = "Salir / Buscar Otra Escuela"; // Texto más descriptivo
+    
+    // 5. Hacemos scroll hacia arriba suavemente
+    document.getElementById('formMain').scrollIntoView({behavior:'smooth'});
+}
 
         function showToast(msg, type) {
             const t = document.getElementById('toast');
-            t.innerText = msg;
-            t.className = type === 'success' ? 'success show' : 'error show';
-            setTimeout(() => t.className = type === 'success' ? 'success' : 'error', 3000);
+            t.innerText = msg; t.className = 'show ' + type;
+            setTimeout(() => t.className = '', 3000);
         }
     </script>
 </body>
 </html>
-
-
-
-
-
