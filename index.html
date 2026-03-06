@@ -70,8 +70,28 @@
             text-transform: uppercase;
             font-size: 0.75rem;
         }
-        .grades-table input { border: none; text-align: center; background: transparent; width: 100%; color: #334155; }
-        .grades-table input:focus { background: var(--accent-cream); outline: none; }
+        .grades-table input { 
+    border: none; 
+    text-align: center; 
+    background: transparent; 
+    width: 100%; 
+    color: #334155; 
+    font-size: 16px; /* Evita el zoom en iPhone */
+    padding: 5px; /* Aumenta el área de toque */
+    box-sizing: border-box;
+    border-radius: 4px;
+    -webkit-appearance: none; /* Quita las flechitas nativas de iOS */
+    margin: 0; 
+}
+
+/* Cuando el input se activa en el celular, ponemos fondo blanco para que se vea claro */
+.grades-table input:focus { 
+    background: #ffffff; 
+    outline: 2px solid var(--primary-light); 
+    box-shadow: none;
+    color: #000; 
+    font-weight: bold;
+}
 
         .tabs { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 20px; border-bottom: 2px solid var(--border); padding-bottom: 10px; }
         .tab-btn { padding: 10px 20px; background: var(--tab-bg); border: 1px solid var(--border); border-radius: 6px; cursor: pointer; font-weight: bold; color: #64748b; }
@@ -573,35 +593,37 @@
     }
 }
 
-        function generateDiagTables(containerId, catIndices, numGrades) {
-            const container = document.getElementById(containerId);
-            let html = '';
-            
-            catIndices.forEach(catIdx => {
-                const cat = DIAG_CATS[catIdx];
-                html += `<h5 style="color:var(--primary); border-bottom:1px solid #eee; margin-top:15px;">${cat.name}</h5>`;
-                html += `<table class="grades-table"><thead><tr><th></th><th colspan="${numGrades}">HOMBRES</th><th colspan="${numGrades}">MUJERES</th></tr><tr><th>G</th>`;
-                
-                for(let i=1; i<=numGrades; i++) html += `<th>${i}º</th>`;
-                for(let i=1; i<=numGrades; i++) html += `<th>${i}º</th>`;
-                html += `</tr></thead><tbody>`;
+       function generateDiagTables(containerId, catIndices, numGrades) {
+    const container = document.getElementById(containerId);
+    let html = '';
+    
+    catIndices.forEach(catIdx => {
+        const cat = DIAG_CATS[catIdx];
+        html += `<h5 style="color:var(--primary); border-bottom:1px solid #eee; margin-top:15px;">${cat.name}</h5>`;
+        html += `<table class="grades-table"><thead><tr><th></th><th colspan="${numGrades}">HOMBRES</th><th colspan="${numGrades}">MUJERES</th></tr><tr><th>G</th>`;
+        
+        for(let i=1; i<=numGrades; i++) html += `<th>${i}º</th>`;
+        for(let i=1; i<=numGrades; i++) html += `<th>${i}º</th>`;
+        html += `</tr></thead><tbody>`;
 
-                html += `<tr>`;
-                html += `<td style="background:#fff1f2; color:#802434; font-weight:bold;">Tot</td>`;
-                
-                // 🔥 CORRECCIÓN: HOMBRES SIEMPRE USAN ÍNDICES 0-5
-                for(let i=0; i<numGrades; i++) html += `<td><input type="number" id="${cat.id}_${i}" min="0"></td>`;
-                
-                // 🔥 CORRECCIÓN: MUJERES SIEMPRE USAN ÍNDICES 6-11
-                // Si numGrades es 3, generaremos IDs 6, 7, 8
-                // Si numGrades es 6, generaremos IDs 6, 7, 8, 9, 10, 11
-                for(let i=0; i<numGrades; i++) html += `<td><input type="number" id="${cat.id}_${6+i}" min="0"></td>`;
-                
-                html += `</tr></tbody></table>`;
-            });
-            
-            container.innerHTML = html;
+        html += `<tr>`;
+        html += `<td style="background:#fff1f2; color:#802434; font-weight:bold;">Tot</td>`;
+        
+        // HOMBRES
+        for(let i=0; i<numGrades; i++) { 
+            html += `<td><input type="number" id="${cat.id}_${i}" min="0" inputmode="numeric" placeholder="0"></td>`;
         }
+        
+        // MUJERES
+        for(let i=0; i<numGrades; i++) { 
+            html += `<td><input type="number" id="${cat.id}_${6+i}" min="0" inputmode="numeric" placeholder="0"></td>`;
+        }
+        
+        html += `</tr></tbody></table>`;
+    });
+    
+    container.innerHTML = html;
+}
 
         function openTab(evt, tabName) {
             const x = document.getElementsByClassName("tab-content");
@@ -702,4 +724,5 @@
     </script>
 </body>
 </html>
+
 
