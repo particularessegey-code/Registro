@@ -43,9 +43,9 @@
              border-color: transparent;
              cursor: not-allowed;
              opacity: 0.8;
-             appearance: none; /* Quita la flechita en algunos navegadores */
+             appearance: none; 
              background-image: none;
-}
+        }
         
         input:focus, select:focus, textarea:focus {
             outline: none;
@@ -84,8 +84,7 @@
             margin: 0; 
         }
 
-/* Cuando el input se activa en el celular, ponemos fondo blanco para que se vea claro */
-.grades-table input:focus { 
+        .grades-table input:focus { 
             background: #ffffff; 
             outline: 2px solid var(--primary-light); 
             box-shadow: none;
@@ -134,7 +133,7 @@
         .toast.success { background: var(--success); }
         .toast.error { background: var(--danger); color: white; } 
 
-        /* --- SPINNER PARA EL BOTÓN DE LOGIN --- */
+        /* --- SPINNER --- */
         .spinner { 
             border: 3px solid rgba(255,255,255,0.3); 
             border-radius: 50%; 
@@ -151,7 +150,7 @@
             100% { transform: rotate(360deg); } 
         }
 
-        /* --- CLASE PARA MARCAR CAMPOS VACÍOS CON ERROR --- */
+        /* --- ERROR EN INPUTS --- */
         .input-error { 
             border: 2px solid var(--danger) !important; 
             background-color: #fef2f2 !important;
@@ -163,6 +162,65 @@
             75% { transform: translateX(5px); }
             100% { transform: translateX(0); }
         }
+
+        /* --- NUEVO: ESTILOS PARA EL VERIFICADOR DE INCONSISTENCIAS --- */
+        .consistency-checker {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: bold;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .status-neutral {
+            background-color: #f3f4f6;
+            color: #4b5563;
+            border-color: #d1d5db;
+        }
+
+        .status-ok {
+            background-color: #d1fae5; /* Verde claro */
+            color: #065f46;
+            border-color: #34d399;
+        }
+
+        .status-error {
+            background-color: #fee2e2; /* Rojo claro */
+            color: #991b1b;
+            border-color: #f87171;
+        }
+
+        .consistency-data {
+            display: flex;
+            gap: 20px;
+            font-size: 1.1rem;
+        }
+        
+        .consistency-message {
+            font-size: 1.1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Iconos sencillos con texto */
+        .icon-ok::before { content: "✅ "; }
+        .icon-error::before { content: "⚠️ "; }
+
+        /* Agrega esto junto a tus otros estilos CSS */
+
+.spinner-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    gap: 10px;
+    font-weight: bold;
+}
 
     </style>
 </head>
@@ -255,6 +313,17 @@
             <!-- 3. FORMULARIO DIAGNÓSTICO DETALLADO -->
             <div class="card hidden" id="formDiag">
                 <h2>3. Detalle de Diagnóstico (Categorías)</h2>
+                
+                <!-- NUEVO: PANEL DE VERIFICACIÓN VISUAL -->
+                <div id="consistencyPanel" class="consistency-checker status-neutral">
+                    <div style="width: 100%; margin-bottom: 10px; font-size: 0.9rem; text-transform: uppercase; opacity: 0.8;">Verificación de Inconsistencias</div>
+                    <div class="consistency-data">
+                        <div>Total NEE: <span id="val-nee">0</span></div>
+                        <div>Total Diagnóstico: <span id="val-diag">0</span></div>
+                    </div>
+                    <div class="consistency-message" id="msg-consistency">...</div>
+                </div>
+
                 <p style="font-size:0.9rem; color:#64748b;">Seleccione una categoría para capturar los datos por grado y género.</p>
 
                 <!-- TABS -->
@@ -335,7 +404,6 @@
                 return;
             }
 
-            // --- EFECTO SPINNER EN EL BOTÓN ---
             const btn = document.querySelector('#login-view button');
             const originalText = btn.innerText;
             btn.disabled = true;
@@ -349,6 +417,7 @@
                     sessionStorage.setItem('authToken', d.token);
                     document.getElementById('login-view').style.display = 'none';
                     document.getElementById('app-view').classList.remove('hidden');
+                    document.getElementById('searchInput').focus(); 
                 } else {
                     errorDiv.innerText = "Usuario o contraseña incorrectos";
                     document.getElementById('password').value = '';
@@ -357,7 +426,6 @@
             } catch (e) {
                 errorDiv.innerText = "Error de conexión";
             } finally {
-                // --- RESTAURAR BOTÓN ---
                 btn.disabled = false;
                 btn.innerHTML = originalText;
             }
@@ -436,18 +504,15 @@
             const btnSaveMain = document.getElementById('btnSaveMain');
             const btnLogout = document.getElementById('btnLogout');
             
-            // Obtenemos todos los inputs y selects
             const inputs = document.querySelectorAll('#mainForm input:not([type="hidden"])');
             const selects = document.querySelectorAll('#mainForm select');
 
             if (hasData) {
                 // --- HAY DATOS: BLOQUEAR TODO ---
-                // Bloquear Inputs con ReadOnly (para mantener el gris y estilo de texto)
                 inputs.forEach(el => {
                     el.readOnly = true;
                     el.classList.add('locked');
                 });
-                // Bloquear Selects con Disabled (para quitar la flechita)
                 selects.forEach(el => {
                     el.disabled = true;
                 });
@@ -479,14 +544,11 @@
         }
 
         async function saveMainData() {
-            // 1. Validación de Campos Vacíos
             const inputs = document.querySelectorAll('#gradesBodyMain input');
             let hasEmpty = false;
             
             inputs.forEach(input => {
-                // Quitamos clase de error previa
                 input.classList.remove('input-error');
-                // Verificamos si está vacío
                 if (input.value === "") {
                     input.classList.add('input-error');
                     hasEmpty = true;
@@ -495,7 +557,7 @@
 
             if (hasEmpty) {
                 showToast("Debe capturar al menos '0' en todos los campos de alumnos.", "error");
-                return; // Detenemos el guardado
+                return;
             }
 
             if(!confirm("¿Seguro que desea guardar los datos principales? No podrán modificarse después.")) return;
@@ -526,7 +588,6 @@
             if(d.success) {
                 showToast("Datos principales guardados y bloqueados", "success");
                 
-                // ✅ BLOQUEO INMEDIATO (DENTRO DEL SUCCESS)
                 inputs.forEach(el => {
                     el.readOnly = true;
                     el.classList.add('locked');
@@ -537,24 +598,18 @@
                 
                 btn.classList.add('hidden');
 
-                // LÓGICA DE RESPUESTA A DIAGNÓSTICO
                 if(payload.diag_flag === 'SI') {
-                    // Si es SÍ, pasamos al diagnóstico
                     loadDiagnosisForm();
                 } else {
-                    // Si es NO, terminamos aquí
-                    // Ocultamos la tarjeta de búsqueda para limpiar la vista
                     document.getElementById('searchCard').classList.add('hidden');
-                    // Mostramos el botón de salir claramente
                     const btnLogout = document.getElementById('btnLogout');
                     btnLogout.classList.remove('hidden');
                     btnLogout.innerText = "Salir / Finalizar";
                 }
             } else {
-                // ✅ MANEJO DE ERROR DE SESIÓN (DENTRO DEL ELSE)
                 if(d.error && d.error.includes("Sesión")) {
                     alert("Tu sesión ha expirado por inactividad o el servidor se reinició. Por favor ingresa nuevamente.");
-                    logout(); // Recarga la página
+                    logout(); 
                 } else {
                     showToast("Error: " + d.error, "error"); 
                     btn.disabled = false;
@@ -565,40 +620,49 @@
         // --- LÓGICA DE DIAGNÓSTICO ---
 
         async function loadDiagnosisForm() {
-            document.getElementById('formDiag').classList.remove('hidden');
-            document.getElementById('formDiag').scrollIntoView({behavior:'smooth'});
-            
-            generateDiagTables('tables-cat-1-2-3', [0,1,2], currentSchoolLevel); 
-            generateDiagTables('tables-cat-4-5-6', [3,4,5], currentSchoolLevel); 
-            generateDiagTables('tables-cat-7-8', [6,7], currentSchoolLevel);     
-            generateDiagTables('tables-cat-9-10', [8,9], currentSchoolLevel);   
+    document.getElementById('formDiag').classList.remove('hidden');
+    document.getElementById('formDiag').scrollIntoView({behavior:'smooth'});
+    
+    // ---> CAMBIO 1: Activar Spinner ANTES de generar tablas y pedir datos <---
+    checkConsistency(true); 
 
-            // ✅ CORRECCIÓN: Enviar también el TURNO para buscar exacto
-            const cct = document.getElementById('cct').value;
-            const turno = document.getElementById('disp-turno').innerText;
+    generateDiagTables('tables-cat-1-2-3', [0,1,2], currentSchoolLevel); 
+    generateDiagTables('tables-cat-4-5-6', [3,4,5], currentSchoolLevel); 
+    generateDiagTables('tables-cat-7-8', [6,7], currentSchoolLevel);     
+    generateDiagTables('tables-cat-9-10', [8,9], currentSchoolLevel);   
 
-            const res = await fetch(SCRIPT_URL, {
-                method: 'POST',
-                body: JSON.stringify({
-                    action:'getDiagnosis', 
-                    token: sessionStorage.getItem('authToken'), 
-                    cct: cct, 
-                    turno: turno
-                })
-            });
-            const d = await res.json();
+    const cct = document.getElementById('cct').value;
+    const turno = document.getElementById('disp-turno').innerText;
 
-            if(d.exists) {
-                document.getElementById('diag_espec').value = d.espec || '';
-                DIAG_CATS.forEach((cat, idx) => {
-                    const arr = d[`cat${idx+1}`] || [];
-                    arr.forEach((val, colIdx) => {
-                        const input = document.getElementById(`${cat.id}_${colIdx}`);
-                        if(input) input.value = val;
-                    });
+    try {
+        const res = await fetch(SCRIPT_URL, {
+            method: 'POST',
+            body: JSON.stringify({
+                action:'getDiagnosis', 
+                token: sessionStorage.getItem('authToken'), 
+                cct: cct, 
+                turno: turno
+            })
+        });
+        const d = await res.json();
+
+        if(d.exists) {
+            document.getElementById('diag_espec').value = d.espec || '';
+            DIAG_CATS.forEach((cat, idx) => {
+                const arr = d[`cat${idx+1}`] || [];
+                arr.forEach((val, colIdx) => {
+                    const input = document.getElementById(`${cat.id}_${colIdx}`);
+                    if(input) input.value = val;
                 });
-            }
+            });
         }
+    } catch (error) {
+        console.error("Error cargando diagnóstico:", error);
+    }
+
+    // ---> CAMBIO 2: Calcular y mostrar resultados DESPUÉS de cargar <---
+    checkConsistency(); 
+}
 
         function generateDiagTables(containerId, catIndices, numGrades) {
             const container = document.getElementById(containerId);
@@ -618,12 +682,14 @@
                 
                 // HOMBRES
                 for(let i=0; i<numGrades; i++) { 
-                    html += `<td><input type="number" id="${cat.id}_${i}" min="0" inputmode="numeric" placeholder="0"></td>`;
+                    // Agregamos oninput para verificar en tiempo real
+                    html += `<td><input type="number" id="${cat.id}_${i}" min="0" inputmode="numeric" placeholder="0" oninput="checkConsistency()"></td>`;
                 }
                 
                 // MUJERES
                 for(let i=0; i<numGrades; i++) { 
-                    html += `<td><input type="number" id="${cat.id}_${6+i}" min="0" inputmode="numeric" placeholder="0"></td>`;
+                    // Agregamos oninput para verificar en tiempo real
+                    html += `<td><input type="number" id="${cat.id}_${6+i}" min="0" inputmode="numeric" placeholder="0" oninput="checkConsistency()"></td>`;
                 }
                 
                 html += `</tr></tbody></table>`;
@@ -632,6 +698,58 @@
             container.innerHTML = html;
         }
 
+      // --- FUNCIÓN DE VERIFICACIÓN VISUAL ACTUALIZADA ---
+function checkConsistency(isLoading = false) {
+    const panel = document.getElementById('consistencyPanel');
+
+    // 1. ESTADO DE CARGA (Spinner)
+    if (isLoading) {
+        panel.className = "consistency-checker status-neutral";
+        panel.innerHTML = `
+            <div class="spinner-container">
+                <span class="spinner" style="width:14px; height:14px; border-width:2px;"></span>
+                <span>Verificando datos...</span>
+            </div>`;
+        return; // Detenemos la función aquí
+    }
+
+    // 2. CÁLCULO DE DATOS
+    // Sumar NEE
+    const neeInputs = document.querySelectorAll('#gradesBodyMain input[name^="nh"], #gradesBodyMain input[name^="nm"]');
+    let totalNEE = 0;
+    neeInputs.forEach(inp => totalNEE += parseInt(inp.value) || 0);
+
+    // Sumar Diagnósticos
+    const diagInputs = document.querySelectorAll('#tables-cat-1-2-3 input[type=number], #tables-cat-4-5-6 input[type=number], #tables-cat-7-8 input[type=number], #tables-cat-9-10 input[type=number]');
+    let totalDiag = 0;
+    diagInputs.forEach(inp => totalDiag += parseInt(inp.value) || 0);
+
+    // 3. DETERMINAR ESTILO Y MENSAJE
+    let cssClass = "status-neutral";
+    let messageHTML = "<span>Sin datos</span>";
+
+    if (totalNEE > 0 || totalDiag > 0) {
+        if (totalNEE === totalDiag) {
+            cssClass = "status-ok";
+            messageHTML = "<span class='icon-ok'>COINCIDEN</span>";
+        } else {
+            const diff = Math.abs(totalNEE - totalDiag);
+            cssClass = "status-error";
+            messageHTML = `<span class='icon-error'>ERROR: Diferencia de ${diff} alumnos</span>`;
+        }
+    }
+
+    // 4. ACTUALIZAR EL HTML DEL PANEL
+    panel.className = `consistency-checker ${cssClass}`;
+    panel.innerHTML = `
+        <div style="width: 100%; margin-bottom: 5px; font-size: 0.8rem; text-transform: uppercase; opacity: 0.8;">Verificación de Inconsistencias</div>
+        <div class="consistency-data">
+            <div>Total NEE: <strong>${totalNEE}</strong></div>
+            <div>Total Diagnóstico: <strong>${totalDiag}</strong></div>
+        </div>
+        <div class="consistency-message">${messageHTML}</div>
+    `;
+}
         function openTab(evt, tabName) {
             const x = document.getElementsByClassName("tab-content");
             for (let i = 0; i < x.length; i++) { x[i].style.display = "none"; }
@@ -642,6 +760,9 @@
         }
 
         async function saveDiagnosis() {
+            // Validación opcional: ¿Guardar si hay inconsistencia?
+            // Por ahora permitimos guardar, pero el usuario ya habrá visto la alerta visual.
+            
             if(!confirm("¿Está seguro de guardar toda la información de diagnóstico?")) return;
             
             const btn = document.querySelector('#diagForm button[type="submit"]');
@@ -649,15 +770,12 @@
 
             const payloads = {};
             DIAG_CATS.forEach((cat, idx) => {
-                // Inicializamos un array de 12 espacios vacíos para la hoja
                 const arr = new Array(12).fill("");
                 
-                // Llenar datos de HOMBRES (Indices 0 a numGrados-1)
                 for(let i=0; i<currentSchoolLevel; i++) { 
                     const input = document.getElementById(`${cat.id}_${i}`);
                     if(input) arr[i] = input.value;
                 }
-                // Llenar datos de MUJERES (Indices 6 a 6+numGrados-1)
                 for(let i=0; i<currentSchoolLevel; i++) { 
                     const input = document.getElementById(`${cat.id}_${6+i}`);
                     if(input) arr[6+i] = input.value;
@@ -680,7 +798,6 @@
             };
 
             try {
-                // Usamos text/plain para evitar bloqueos CORS
                 const res = await fetch(SCRIPT_URL, { 
                     method: 'POST', 
                     headers: { 'Content-Type': 'text/plain' },
@@ -704,21 +821,13 @@
         }
 
         function goBackToMain() {
-            // 1. Ocultamos la sección de diagnóstico
             document.getElementById('formDiag').classList.add('hidden');
-            
-            // 2. Mostramos la sección de Datos Principales
             document.getElementById('formMain').classList.remove('hidden');
-            
-            // 3. Mostramos la barra de búsqueda
             document.getElementById('searchCard').classList.remove('hidden');
-            
-            // 4. Mostramos el botón de Salir
+            setTimeout(() => document.getElementById('searchInput').focus(), 100);
             const btnLogout = document.getElementById('btnLogout');
             btnLogout.classList.remove('hidden');
             btnLogout.innerText = "Salir / Buscar Otra Escuela";
-            
-            // 5. Hacemos scroll hacia arriba suavemente
             document.getElementById('formMain').scrollIntoView({behavior:'smooth'});
         }
 
