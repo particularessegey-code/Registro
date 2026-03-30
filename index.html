@@ -221,6 +221,14 @@
     gap: 10px;
     font-weight: bold;
 }
+/* Estilo para la tarjeta de reportes */
+.report-box {
+    background: #f8fafc;
+    border: 1px dashed var(--primary);
+    padding: 15px;
+    border-radius: 8px;
+    text-align: center;
+}
 
     </style>
 </head>
@@ -251,12 +259,33 @@
             
             <!-- 1. BUSCAR -->
             <div class="card" id="searchCard">
-                <h2>1. Buscar Escuela</h2>
+                <h2>La captura de alumnos con Necesidades Educativas Específicas (NEE) ha finalizado. 25 áreas cumplieron con la captura; solo el área 10 no cumplió con su captura. Si quieren consultar su reporte, pueden descargar su captura.</h2>
                 <div style="display:flex; gap:10px;">
-                    <input type="text" id="searchInput" placeholder="Clave CCT..." onkeypress="if(event.key==='Enter') searchSchool()">
-                    <button class="btn btn-primary" style="width:auto;" onclick="searchSchool()">Buscar</button>
+                   <!-- <input type="text" id="searchInput" placeholder="Clave CCT..." onkeypress="if(event.key==='Enter') searchSchool()">-->
+                    <!--<button class="btn btn-primary" style="width:auto;" onclick="searchSchool()">Buscar</button>-->
                 </div>
                 <div id="resultsList" style="margin-top:20px; max-height: 250px; overflow-y: auto;"></div>
+            </div>
+
+                        <!-- NUEVA TARJETA: REPORTES -->
+            <div class="card" id="reportCard">
+                <h2 style="color:var(--primary);">📊 Reportes por Área</h2>
+                <p style="font-size:0.9rem; color:#64748b; margin-bottom:15px;">
+                    Descarga un archivo Excel compatible con todos los datos (Generales y Diagnóstico) de un área específica.
+                </p>
+                
+                <div class="report-box">
+                    <div style="margin-bottom:10px; text-align:left;">
+                        <label style="font-weight:bold; color:var(--primary);">Seleccionar Área:</label>
+                        <select id="areaSelect" style="margin-top:5px;">
+                            <option value="">Cargando áreas...</option>
+                        </select>
+                    </div>
+                    
+                    <button class="btn btn-success" style="max-width:300px; margin: 0 auto;" onclick="downloadAreaReport()">
+                        📥 Descargar Excel (.csv)
+                    </button>
+                </div>
             </div>
 
             <!-- 2. FORMULARIO PRINCIPAL -->
@@ -378,7 +407,7 @@
     <div id="toast" class="toast">Notificación</div>
 
     <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzDYV9gFSVBZ8kBQ63a7mJI_vtH5dhIg8oqwGJtDCHvTcMB5ZX9Z_I-BuH8eDMArsTvPA/exec";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzFToppzGcxJqt5xnEEpL5hY8-iNoUVKv61A1pXFMHsjXATbWHwOI6-CsGB8XvlEzJRFg/exec";
 
         const DIAG_CATS = [
             { id: 'cat1', name: 'TEA (Autismo)', cols: ['1ºH', '2ºH', '3ºH', '4ºH', '5ºH', '6ºH', '1ºM', '2ºM', '3ºM', '4ºM', '5ºM', '6ºM'] },
@@ -417,6 +446,7 @@
                     sessionStorage.setItem('authToken', d.token);
                     document.getElementById('login-view').style.display = 'none';
                     document.getElementById('app-view').classList.remove('hidden');
+                    loadAreasForReport(); 
                     document.getElementById('searchInput').focus(); 
                 } else {
                     errorDiv.innerText = "Usuario o contraseña incorrectos";
@@ -835,6 +865,84 @@ function checkConsistency(isLoading = false) {
             const t = document.getElementById('toast');
             t.innerText = msg; t.className = 'show ' + type;
             setTimeout(() => t.className = '', 3000);
+        }
+                // --- LÓGICA DE REPORTES ---
+
+        // Cargar las áreas al iniciar sesión
+        async function loadAreasForReport() {
+            try {
+                const res = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: 'getAreas', token: sessionStorage.getItem('authToken') })
+                });
+                const d = await res.json();
+                
+                if (d.success) {
+                    const select = document.getElementById('areaSelect');
+                    select.innerHTML = '<option value="">-- Seleccione un Área --</option>';
+                    d.areas.forEach(area => {
+                        const option = document.createElement('option');
+                        option.value = area;
+                        option.innerText = area;
+                        select.appendChild(option);
+                    });
+                }
+            } catch (e) {
+                console.error("Error cargando áreas", e);
+            }
+        }
+
+        // Función para descargar el archivo
+        async function downloadAreaReport() {
+            const area = document.getElementById('areaSelect').value;
+            if (!area) {
+                showToast("Por favor seleccione un área primero", "error");
+                return;
+            }
+
+            const btn = document.querySelector('#reportCard .btn-success');
+            const originalText = btn.innerText;
+            btn.disabled = true;
+            btn.innerText = "Generando archivo...";
+
+            try {
+                const res = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ 
+                        action: 'exportArea', 
+                        token: sessionStorage.getItem('authToken'),
+                        area: area
+                    })
+                });
+                
+                const d = await res.json();
+
+                if (d.success) {
+                    // Crear un Blob con el contenido CSV y tipo MIME correcto
+                    // Agregamos \uFEFF para que Excel reconozca los acentos (UTF-8 BOM)
+                    const bom = "\uFEFF"; 
+                    const blob = new Blob([bom + d.fileContent], { type: 'text/csv;charset=utf-8;' });
+                    
+                    // Crear enlace de descarga temporal
+                    const url = URL.createObjectURL(blob);
+                    const link = document.createElement("a");
+                    link.setAttribute("href", url);
+                    link.setAttribute("download", d.filename);
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    
+                    showToast("Archivo descargado correctamente", "success");
+                } else {
+                    showToast("Error: " + d.error, "error");
+                }
+            } catch (e) {
+                showToast("Error al generar el reporte", "error");
+                console.error(e);
+            } finally {
+                btn.disabled = false;
+                btn.innerText = originalText;
+            }
         }
     </script>
 </body>
